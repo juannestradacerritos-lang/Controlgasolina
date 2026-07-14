@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Control de Gasolina</title>
+    
+    <meta name="theme-color" content="#dc2626">
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Control de Gasolina","short_name":"Gasolina","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3063/3063189.png","sizes":"512x512","type":"image/png"}],"start_url":".","display":"standalone","background_color":"%23f8fafc","theme_color":"%23dc2626"}'>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #dc2626; 
+            --primary-dark: #b91c1c;
+            --secondary: #1e293b; 
+            --success: #16a34a;
+            --info: #0284c7;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --border: #e2e8f0;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 0; 
+            padding-bottom: 40px;
+        }
+
+        .app-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .app-header h1 { margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.5px; }
+
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+
+        .card { 
+            background: var(--surface); 
+            padding: 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            margin-bottom: 24px; 
+            border: 1px solid var(--border);
+        }
+        
+        .card h2 { 
+            color: var(--secondary); 
+            margin-top: 0; 
+            font-size: 1.25rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            border: 1px solid var(--border); 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            background-color: var(--bg);
+            box-sizing: border-box;
+            transition: border 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; background-color: var(--surface); }
+
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 12px; 
+            color: white; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: transform 0.1s, opacity 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        button:active { transform: scale(0.97); }
+        .btn-calc { background-color: var(--info); margin-top: 10px; }
+        .btn-guardar { background-color: var(--success); margin-top: 10px; }
+        .btn-pdf { background-color: var(--secondary); margin-top: 15px; }
+
+        .btn-delete {
+            background-color: #fee2e2;
+            color: var(--primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            width: auto;
+            margin: 0 auto;
+            font-size: 1rem;
+        }
+        .btn-delete:hover { background-color: #fecaca; }
+
+        .res-calc { 
+            background: #eff6ff; 
+            border-left: 4px solid var(--info); 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-top: 20px; 
+            font-size: 0.95rem; 
+            line-height: 1.6;
+            color: #1e3a8a;
+        }
+        .alert-text { color: var(--primary); font-weight: bold; display: block; margin-top: 8px; }
+
+        .table-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 650px; }
+        th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg); color: var(--secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        tr:last-child td { border-bottom: none; }
+        .badge { background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="app-header">
+    <h1>🏍️ Control de Gasolina</h1>
+</div>
+
+<div class="container">
+    
+    <div class="card">
+        <h2>🧭 Calculadora de Viaje</h2>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>KM a Recorrer</label>
+                <input type="number" id="kmViaje" placeholder="Ej. 150">
+            </div>
+            <div class="input-group">
+                <label>Precio Galón (Q)</label>
+                <input type="number" id="precioGalon" placeholder="Ej. 30.50">
+            </div>
+        </div>
+        <button class="btn-calc" onclick="proyectar()">📊 Calcular Proyección</button>
+        <div id="resultadoProyeccion" style="display: none;"></div>
+    </div>
+
+    <div class="card">
+        <h2>⛽ Nuevo Registro</h2>
+        <div class="input-group">
+            <label>No. Factura</label>
+            <input type="text" id="f" placeholder="Opcional / Identificador">
+        </div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>KM Inicial</label>
+                <input type="number" id="ki" placeholder="Ej. 5000">
+            </div>
+            <div class="input-group">
+                <label>KM Final</label>
+                <input type="number" id="kf" placeholder="Ej. 5200">
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Galones Cargados</label>
+                <input type="number" id="gal" step="0.001" placeholder="Ej. 2.500">
+            </div>
+            <div class="input-group">
+                <label>Costo Total (Q)</label>
+                <input type="number" id="costo" step="0.01" placeholder="Ej. 75.00">
+            </div>
+        </div>
+        <button class="btn-guardar" onclick="guardar()">💾 Guardar Historial</button>
+    </div>
+
+    <div class="card">
+        <h2>📋 Historial de Rendimiento</h2>
+        <div class="table-wrapper">
+            <table id="tablaHistorial">
+                <thead>
+                    <tr>
+                        <th>Fac.</th>
+                        <th>KM</th>
+                        <th>Galones</th>
+                        <th>Litros</th>
+                        <th>Rend.(km/gal)</th>
+                        <th>Rend.(km/L)</th>
+                        <th>Costo/KM</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyHistorial"></tbody>
+            </table>
+        </div>
+        <button class="btn-pdf" onclick="descargarPDF()">📄 Exportar a PDF</button>
+    </div>
+
+</div>
+
+<script>
+    let historial = JSON.parse(localStorage.getItem('gasDataPro')) || [];
+    renderizar();
+
+    function proyectar() {
+        const km = parseFloat(document.getElementById('kmViaje').value);
+        const precio = parseFloat(document.getElementById('precioGalon').value);
+        const resDiv = document.getElementById('resultadoProyeccion');
+        
+        if (!km || !precio) {
+            alert("⚠️ Por favor ingresa los KM a recorrer y el precio del galón.");
+            return;
+        }
+
+        let promRend = 100;
+        if (historial.length > 0) {
+            const sumaRend = historial.reduce((acc, item) => acc + item.rendGal, 0);
+            promRend = sumaRend / historial.length;
+        }
+
+        const galBase = km / promRend;
+        const minGal = galBase * 0.90; 
+        const maxGal = galBase * 1.10; 
+        
+        const costoMin = minGal * precio;
+        const costoMax = maxGal * precio;
+        
+        let html = `
+            <div class="res-calc">
+                <strong>📈 Promedio inteligente:</strong> ${promRend.toFixed(1)} km/gal<br><br>
+                <strong>⛽ Rango a cargar:</strong> ${minGal.toFixed(2)} - ${maxGal.toFixed(2)} galones<br>
+                <strong>💰 Presupuesto:</strong> Q${costoMin.toFixed(2)} - Q${costoMax.toFixed(2)}
+        `;
+        
+        if (maxGal > 3.0) {
+            html += `<span class='alert-text'>⚠️ ¡Cuidado! Te acercas al límite del tanque (3.5 galones).</span>`;
+        }
+        
+        html += `</div>`;
+        resDiv.innerHTML = html;
+        resDiv.style.display = 'block';
+    }
+
+    function guardar() {
+        const f = document.getElementById('f').value || '-';
+        const ki = parseFloat(document.getElementById('ki').value);
+        const kf = parseFloat(document.getElementById('kf').value);
+        const gal = parseFloat(document.getElementById('gal').value);
+        const costo = parseFloat(document.getElementById('costo').value);
+        
+        if(!ki || !kf || !gal || !costo) {
+            alert("⚠️ Por favor llena todos los datos de kilometraje, galones y costo.");
+            return;
+        }
+
+        const rec = kf - ki;
+        const litros = gal * 3.78541; 
+        const rendGal = rec / gal;
+        const rendLitro = rec / litros; 
+        const cent = (costo / rec) * 100;
+
+        historial.push({f, rec, gal, litros, rendGal, rendLitro, cent});
+        localStorage.setItem('gasDataPro', JSON.stringify(historial));
+        renderizar();
+        
+        document.getElementById('f').value = '';
+        document.getElementById('ki').value = '';
+        document.getElementById('kf').value = '';
+        document.getElementById('gal').value = '';
+        document.getElementById('costo').value = '';
+    }
+
+    function borrarRegistro(index) {
+        if(confirm("¿Estás seguro de que deseas eliminar este registro?")) {
+            historial.splice(index, 1);
+            localStorage.setItem('gasDataPro', JSON.stringify(historial));
+            renderizar();
+        }
+    }
+
+    function renderizar() {
+        const body = document.getElementById('bodyHistorial');
+        body.innerHTML = '';
+        historial.forEach((item, index) => {
+            // Conversión de centavos a formato Q0.00
+            const costoQ = (item.cent / 100).toFixed(2);
+            
+            body.innerHTML += `
+                <tr>
+                    <td>${item.f}</td>
+                    <td>${item.rec}</td>
+                    <td>${item.gal.toFixed(2)}</td>
+                    <td>${item.litros ? item.litros.toFixed(2) : '-'}</td>
+                    <td>${item.rendGal.toFixed(2)}</td>
+                    <td>${item.rendLitro ? item.rendLitro.toFixed(2) : '-'}</td>
+                    <td><span class="badge">Q${costoQ}</span></td>
+                    <td><button class="btn-delete" onclick="borrarRegistro(${index})">🗑️</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    function descargarPDF() {
+        if(historial.length === 0) return alert("No hay datos para exportar.");
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        doc.setFontSize(16);
+        doc.text("Historial de Consumo", 14, 15);
+        doc.autoTable({ 
+            html: '#tablaHistorial', 
+            startY: 25, 
+            theme: 'grid',
+            columns: [
+                { header: 'Fac.', dataKey: 0 },
+                { header: 'KM', dataKey: 1 },
+                { header: 'Galones', dataKey: 2 },
+                { header: 'Litros', dataKey: 3 },
+                { header: 'Rend.(km/gal)', dataKey: 4 },
+                { header: 'Rend.(km/L)', dataKey: 5 },
+                { header: 'Costo/KM', dataKey: 6 }
+                // Excluimos la columna de Acción (basurero) del PDF
+            ]
+        });
+        doc.save('Control_Gasolina.pdf');
+    }
+</script>
+</body>
+</html>
