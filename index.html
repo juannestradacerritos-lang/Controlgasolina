@@ -219,6 +219,26 @@
     let historial = JSON.parse(localStorage.getItem('gasDataPro')) || [];
     renderizar();
 
+    // 🔴 NUEVA FUNCIÓN: Autoguardado de borrador mientras escribes
+    const inputIds = ['kmViaje', 'precioGalon', 'f', 'ki', 'kf', 'gal', 'costo'];
+    
+    window.addEventListener('DOMContentLoaded', () => {
+        inputIds.forEach(id => {
+            const inputElement = document.getElementById(id);
+            
+            // Cargar datos que hayan quedado a medias
+            const valorGuardado = localStorage.getItem('borrador_' + id);
+            if (valorGuardado) {
+                inputElement.value = valorGuardado;
+            }
+            
+            // Guardar en la memoria cada vez que tocas una tecla
+            inputElement.addEventListener('input', () => {
+                localStorage.setItem('borrador_' + id, inputElement.value);
+            });
+        });
+    });
+
     function proyectar() {
         const km = parseFloat(document.getElementById('kmViaje').value);
         const precio = parseFloat(document.getElementById('precioGalon').value);
@@ -280,11 +300,13 @@
         localStorage.setItem('gasDataPro', JSON.stringify(historial));
         renderizar();
         
-        document.getElementById('f').value = '';
-        document.getElementById('ki').value = '';
-        document.getElementById('kf').value = '';
-        document.getElementById('gal').value = '';
-        document.getElementById('costo').value = '';
+        // 🔴 Limpiar inputs visualmente
+        const camposLimpiar = ['f', 'ki', 'kf', 'gal', 'costo'];
+        camposLimpiar.forEach(id => {
+            document.getElementById(id).value = '';
+            // Limpiar también el borrador de esos campos para que la próxima vez estén vacíos
+            localStorage.removeItem('borrador_' + id);
+        });
     }
 
     function borrarRegistro(index) {
@@ -299,7 +321,6 @@
         const body = document.getElementById('bodyHistorial');
         body.innerHTML = '';
         historial.forEach((item, index) => {
-            // Conversión de centavos a formato Q0.00
             const costoQ = (item.cent / 100).toFixed(2);
             
             body.innerHTML += `
@@ -335,7 +356,6 @@
                 { header: 'Rend.(km/gal)', dataKey: 4 },
                 { header: 'Rend.(km/L)', dataKey: 5 },
                 { header: 'Costo/KM', dataKey: 6 }
-                // Excluimos la columna de Acción (basurero) del PDF
             ]
         });
         doc.save('Control_Gasolina.pdf');
