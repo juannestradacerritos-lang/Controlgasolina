@@ -7,39 +7,232 @@
     <meta name="theme-color" content="#dc2626">
     
     <!-- Manifest incrustado directamente para la PWA -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Control de Gasolina","short_name":"Gasolina","start_url":".","display":"standalone","background_color":"#f8fafc","theme_color":"#dc2626","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3063/3063189.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Control de Gasolina","short_name":"Gasolina","start_url":".","display":"standalone","background_color":"#f3f4f6","theme_color":"#dc2626","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3063/3063189.png","sizes":"512x512","type":"image/png"}]}'>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --primary: #dc2626; --secondary: #1e293b; --success: #16a34a; --info: #0284c7; --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --border: #e2e8f0; }
-        body { font-family: Inter, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0 0 40px; }
-        .app-header { background-color: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 10; }
-        .app-header h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
-        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
-        .card { background: var(--surface); padding: 24px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 24px; border: 1px solid var(--border); }
-        .card h2 { color: var(--secondary); margin-top: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--bg); padding-bottom: 12px; margin-bottom: 20px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 6px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        input { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background-color: var(--bg); box-sizing: border-box; transition: border 0.3s; }
-        input:focus { border-color: var(--primary); outline: none; background-color: var(--surface); }
-        button { width: 100%; padding: 16px; border: none; border-radius: 12px; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        button:active { transform: scale(0.97); }
-        .btn-calc { background-color: var(--info); margin-top: 10px; }
+        /* Paleta de colores más moderna y profesional */
+        :root { 
+            --primary: #dc2626; 
+            --primary-hover: #b91c1c;
+            --secondary: #1f2937; 
+            --success: #10b981; 
+            --success-hover: #059669;
+            --info: #3b82f6; 
+            --info-hover: #2563eb;
+            --bg: #f3f4f6; 
+            --surface: #ffffff; 
+            --text-main: #111827; 
+            --text-muted: #6b7280;
+            --border: #e5e7eb; 
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0 0 40px; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Encabezado elegante */
+        .app-header { 
+            background: linear-gradient(135deg, var(--primary) 0%, #ef4444 100%);
+            color: white; 
+            padding: 24px 20px; 
+            text-align: center; 
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2); 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
+        }
+        .app-header h1 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            letter-spacing: -0.025em;
+        }
+
+        .container { 
+            max-width: 800px; 
+            margin: 24px auto; 
+            padding: 0 16px; 
+        }
+
+        /* Tarjetas con diseño limpio y sombra suave */
+        .card { 
+            background: var(--surface); 
+            padding: 28px; 
+            border-radius: var(--radius); 
+            box-shadow: var(--shadow); 
+            margin-bottom: 24px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+        .card h2 { 
+            color: var(--secondary); 
+            margin-top: 0; 
+            font-size: 1.25rem; 
+            font-weight: 600;
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 16px; 
+            margin-bottom: 24px; 
+        }
+
+        /* Campos de formulario modernos */
+        .input-group { margin-bottom: 18px; }
+        .input-group label { 
+            display: block; 
+            font-size: 0.875rem; 
+            font-weight: 500; 
+            color: var(--text-muted); 
+            margin-bottom: 8px; 
+        }
+        .grid-2 { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 16px; 
+        }
+        input { 
+            width: 100%; 
+            padding: 14px 16px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            color: var(--text-main);
+            background-color: #f9fafb; 
+            box-sizing: border-box; 
+            transition: all 0.2s ease; 
+        }
+        input::placeholder { color: #9ca3af; }
+        input:focus { 
+            border-color: var(--primary); 
+            outline: none; 
+            background-color: var(--surface);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+        }
+
+        /* Botones con transiciones pulidas */
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 8px; 
+            color: white; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 8px; 
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:active { transform: translateY(1px); }
+        
+        .btn-calc { background-color: var(--info); }
+        .btn-calc:hover { background-color: var(--info-hover); }
+        
         .btn-guardar { background-color: var(--success); }
+        .btn-guardar:hover { background-color: var(--success-hover); }
         
-        /* Ajuste específico para el botón de guardado: pequeño y arriba a la izquierda */
-        .btn-guardar-small { width: auto; padding: 6px 12px; font-size: 0.8rem; display: inline-flex; margin: 0 0 15px 0; }
+        .btn-pdf { background-color: var(--secondary); margin-top: 20px; }
+        .btn-pdf:hover { background-color: #111827; }
         
-        .btn-delete { background-color: #fee2e2; color: var(--primary); padding: 8px 12px; border-radius: 8px; width: auto; font-size: 1rem; }
-        .res-calc { background: #eff6ff; border-left: 4px solid var(--info); padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.95rem; color: #1e3a8a; }
-        .alert-text { color: var(--primary); font-weight: bold; display: block; margin-top: 8px; }
-        .table-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 650px; }
-        th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid var(--border); }
-        th { background: var(--bg); color: var(--secondary); font-weight: 700; text-transform: uppercase; }
-        .badge { background: var(--primary); color: white; padding: 4px 8px; border-radius: 6px; font-weight: 700; }
+        /* Botón de guardado pequeño arriba a la izquierda */
+        .btn-guardar-small { 
+            width: auto; 
+            padding: 8px 16px; 
+            font-size: 0.875rem; 
+            display: inline-flex; 
+            margin: 0 0 20px 0; 
+            border-radius: 6px;
+        }
+        
+        .btn-delete { 
+            background-color: #fee2e2; 
+            color: var(--primary); 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            width: auto; 
+            font-size: 1rem; 
+        }
+        .btn-delete:hover { background-color: #fecaca; }
+
+        /* Alertas y resultados */
+        .res-calc { 
+            background: #eff6ff; 
+            border-left: 4px solid var(--info); 
+            padding: 16px; 
+            border-radius: 0 8px 8px 0; 
+            margin-top: 24px; 
+            font-size: 0.95rem; 
+            color: #1e3a8a; 
+            line-height: 1.5;
+        }
+        .alert-text { color: var(--primary); font-weight: 700; display: block; margin-top: 8px; }
+
+        /* Tabla más limpia y profesional */
+        .table-wrapper { 
+            overflow-x: auto; 
+            border-radius: 8px; 
+            border: 1px solid var(--border); 
+            background: var(--surface);
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 0.875rem; 
+            min-width: 700px; 
+        }
+        th, td { 
+            padding: 14px 16px; 
+            text-align: center; 
+            border-bottom: 1px solid var(--border); 
+        }
+        th { 
+            background: #f9fafb; 
+            color: var(--text-muted); 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        tbody tr { transition: background-color 0.2s; }
+        tbody tr:hover { background-color: #f9fafb; }
+        
+        .badge { 
+            background: #fee2e2; 
+            color: var(--primary); 
+            padding: 4px 10px; 
+            border-radius: 9999px; /* Estilo píldora */
+            font-weight: 600; 
+            font-size: 0.8rem;
+        }
+
+        /* Estilos de Impresión para Exportar a PDF Limpio (INACTO) */
+        @media print {
+            body { background: white; padding: 0; }
+            .card { box-shadow: none; border: none; margin-bottom: 0; padding: 10px; }
+            .card:nth-child(1), .card:nth-child(2), .app-header { display: none !important; }
+            button, .btn-pdf, .btn-delete { display: none !important; }
+            .table-wrapper::before { content: "Historial de Rendimiento - Control de Gasolina"; font-size: 1.5rem; font-weight: bold; display: block; margin-bottom: 20px; text-align: center; color: black; }
+            table { border: 1px solid black; }
+            th, td { border: 1px solid #ccc; color: black; }
+            .badge { background: none; color: black; border: 1px solid black; }
+            th:last-child, td:last-child { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -51,7 +244,7 @@
 <div class="container">
     <!-- Calculadora -->
     <div class="card">
-        <h2>🧭 Calculadora de Viaje</h2>
+        <h2>🧭 Control de Gasolina</h2>
         <div class="grid-2">
             <div class="input-group">
                 <label>KM a Recorrer</label>
@@ -122,6 +315,7 @@
                 </tbody>
             </table>
         </div>
+        <button class="btn-pdf" id="btnExportarPDF">📄 Exportar a PDF</button>
     </div>
 </div>
 
@@ -167,7 +361,7 @@
                 <td><button class="btn-delete" onclick="this.parentElement.parentElement.remove()">🗑️</button></td>
             `;
             
-            tbody.prepend(tr); // Agrega el registro en la parte superior de la tabla
+            tbody.prepend(tr); 
             
             // Limpia los campos dejando el KM final como el nuevo KM inicial
             document.getElementById('f').value = '';
@@ -180,15 +374,19 @@
         }
     });
 
+    // Función para Exportar a PDF (Usa la herramienta del navegador)
+    document.getElementById('btnExportarPDF').addEventListener('click', () => {
+        window.print(); 
+    });
+
     // Activación del Modo Offline (Service Worker inyectado mediante un Blob)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swCode = `
-                const CACHE_NAME = 'gasolina-cache-v1';
+                const CACHE_NAME = 'gasolina-cache-v2';
                 self.addEventListener('install', event => {
                     event.waitUntil(
                         caches.open(CACHE_NAME).then(cache => {
-                            // Almacena la URL actual para que cargue sin internet
                             return cache.addAll([location.href.split('#')[0].split('?')[0]]);
                         })
                     );
