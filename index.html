@@ -73,7 +73,7 @@
         .alert-box { background: #f0fdfa; border-left: 4px solid var(--success); padding: 16px; border-radius: 4px; margin-top: 20px; font-size: 0.9rem; color: #134e4a; display: none; }
         
         .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 750px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 850px; }
         th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
         th { background: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; }
         tbody tr:hover { background-color: #f8fafc; }
@@ -116,7 +116,7 @@
             </div>
             <div class="input-group">
                 <label>Precio del Galón (Q)</label>
-                <input type="number" id="precioGalon" placeholder="Ej. 30.50">
+                <input type="number" id="precioGalon" placeholder="Ej. 38.57">
             </div>
         </div>
         <button class="btn-secondary" id="btnCalcular"><i class="fas fa-chart-pie"></i> Calcular Estimación</button>
@@ -148,15 +148,20 @@
                 <input type="number" id="kf" placeholder="Ej. 5200">
             </div>
         </div>
+        
         <div class="grid-2">
             <div class="input-group">
-                <label>Volumen (Galones)</label>
-                <input type="number" id="gal" step="0.001" placeholder="Ej. 2.500">
+                <label>CANT. Galones</label>
+                <input type="number" id="gal" step="0.001" placeholder="Ej. 1.738">
             </div>
             <div class="input-group">
-                <label>Monto Facturado (Q)</label>
-                <input type="number" id="costo" step="0.01" placeholder="Ej. 75.00">
+                <label>Precio/Galón (Q)</label>
+                <input type="number" id="precio" step="0.01" placeholder="Ej. 38.57">
             </div>
+        </div>
+        <div class="input-group">
+            <label>Monto Total Facturado (Q)</label>
+            <input type="number" id="costo" step="0.01" placeholder="Ej. 67.03">
         </div>
         
         <button class="btn-success" id="btnGuardar" style="margin-top: 10px;"><i class="fas fa-save"></i> Guardar en Base de Datos</button>
@@ -173,7 +178,7 @@
         <h2><i class="fas fa-table"></i> Base de Datos Histórica</h2>
         
         <div class="grid-2" style="margin-bottom: 16px;">
-            <button class="btn-outline" id="btnBackup"><i class="fas fa-download"></i> Guardar Copia de Seguridad</button>
+            <button class="btn-outline" id="btnBackup"><i class="fas fa-download"></i> Guardar Copia</button>
             <button class="btn-outline" onclick="document.getElementById('inputRestore').click()"><i class="fas fa-upload"></i> Restaurar Copia</button>
             <input type="file" id="inputRestore" accept=".json" style="display: none;">
         </div>
@@ -182,11 +187,12 @@
             <table id="tablaHistorial">
                 <thead>
                     <tr>
-                        <th>Referencia</th>
+                        <th>Ref.</th>
                         <th>Odo. Inic.</th>
                         <th>Odo. Fin.</th>
                         <th>Distancia</th>
                         <th>Galones</th>
+                        <th>Prec/Gal(Q)</th>
                         <th>Eficiencia</th>
                         <th>Costo/KM</th>
                         <th style="text-align: center;">Acción</th>
@@ -229,7 +235,7 @@
         actualizarGrafica();
     });
 
-    // OCR
+    // --- OCR: ENTRENADO PARA FACTURAS ESTILO "UNO" ---
     document.getElementById('btnOCR').addEventListener('click', () => document.getElementById('inputFactura').click());
     
     document.getElementById('inputFactura').addEventListener('change', async (e) => {
@@ -245,11 +251,24 @@
             const result = await Tesseract.recognize(file, 'spa');
             const texto = result.data.text.toLowerCase();
 
-            const matchGal = texto.match(/(?:gal|galones|volumen)[\s:;\.]*([\d]+[\.,][\d]+)/i);
-            const matchCosto = texto.match(/(?:total|q\.|q|quetzales)[\s:;\.]*([\d]+[\.,][\d]+)/i);
+            // Lógica 1: Buscar la línea específica con Cantidad, Precio y Total (Ej: 1.738 A-S REGULAR 38.57 67.03)
+            const regexLineaGasolinera = /([\d]+[\.,][\d]+)\s+(?:[a-z\-]+\s+)?(?:regular|super|diesel|v-power|combustible).*?([\d]+[\.,][\d]{2})\s+([\d]+[\.,][\d]{2})/i;
+            const matchLinea = texto.match(regexLineaGasolinera);
 
-            if (matchGal) document.getElementById('gal').value = matchGal[1].replace(',', '.');
-            if (matchCosto) document.getElementById('costo').value = matchCosto[1].replace(',', '.');
+            if (matchLinea) {
+                document.getElementById('gal').value = matchLinea[1].replace(',', '.');
+                document.getElementById('precio').value = matchLinea[2].replace(',', '.');
+                document.getElementById('costo').value = matchLinea[3].replace(',', '.');
+            } else {
+                // Lógica 2: Fallback por palabras individuales si el ticket está desordenado
+                const matchGal = texto.match(/(?:cant|cantidad|gal|galones|volumen)[\s:;\.]*([\d]+[\.,][\d]+)/i);
+                const matchPrecio = texto.match(/(?:precio|prec)[\s:;\.]*([\d]+[\.,][\d]{2})/i);
+                const matchCosto = texto.match(/(?:total|q\.|q|quetzales)[\s:;\.]*([\d]+[\.,][\d]{2})/i);
+
+                if (matchGal) document.getElementById('gal').value = matchGal[1].replace(',', '.');
+                if (matchPrecio) document.getElementById('precio').value = matchPrecio[1].replace(',', '.');
+                if (matchCosto) document.getElementById('costo').value = matchCosto[1].replace(',', '.');
+            }
 
             status.style.color = '#0f766e';
             status.innerHTML = '<i class="fas fa-check"></i> Extracción exitosa. Verifique los campos.';
@@ -308,8 +327,15 @@
         const kf = parseFloat(document.getElementById('kf').value);
         const gal = parseFloat(document.getElementById('gal').value);
         const costo = parseFloat(document.getElementById('costo').value);
+        let precioVal = parseFloat(document.getElementById('precio').value);
 
         if (ki && kf && gal && costo && kf > ki) {
+            
+            // Autocompletar precio si se dejó vacío
+            if(!precioVal) {
+                precioVal = costo / gal;
+            }
+
             const recorrido = kf - ki;
             const rendimiento = recorrido / gal;
             const costoKm = costo / recorrido;
@@ -317,6 +343,7 @@
             const nuevoRegistro = {
                 id: Date.now(), fac, ki, kf, recorrido, 
                 gal: gal.toFixed(3), 
+                precio: precioVal.toFixed(2),
                 rendimiento: rendimiento.toFixed(2), 
                 costoKm: costoKm.toFixed(2)
             };
@@ -328,6 +355,7 @@
             document.getElementById('ki').value = kf;
             document.getElementById('kf').value = '';
             document.getElementById('gal').value = '';
+            document.getElementById('precio').value = '';
             document.getElementById('costo').value = '';
             
             renderizarTabla();
@@ -349,6 +377,9 @@
         const tbody = document.getElementById('bodyHistorial');
         tbody.innerHTML = '';
         historialArray.forEach(reg => {
+            // Protección por si registros viejos no tienen precio guardado
+            const precioMostrado = reg.precio ? `Q${reg.precio}` : '-'; 
+            
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${reg.fac}</strong></td>
@@ -356,6 +387,7 @@
                 <td>${reg.kf}</td>
                 <td>${reg.recorrido} km</td>
                 <td>${reg.gal}</td>
+                <td>${precioMostrado}</td>
                 <td>${reg.rendimiento}</td>
                 <td><span class="badge">Q${reg.costoKm}</span></td>
                 <td style="text-align: center;"><button class="btn-icon-danger" onclick="borrarRegistro(${reg.id})" title="Eliminar"><i class="fas fa-trash"></i></button></td>
@@ -450,9 +482,10 @@
 
     document.getElementById('btnExportarCSV').addEventListener('click', () => {
         if (historialArray.length === 0) return alert("Base de datos vacía.");
-        let csvContent = "data:text/csv;charset=utf-8,Referencia,Odometro Inicial,Odometro Final,Distancia(km),Galones,Eficiencia(km/gal),Costo por KM(Q)\n";
+        let csvContent = "data:text/csv;charset=utf-8,Referencia,Odometro Inicial,Odometro Final,Distancia(km),Galones,Precio/Galon(Q),Eficiencia(km/gal),Costo por KM(Q)\n";
         historialArray.forEach(r => {
-            csvContent += `"${r.fac}",${r.ki},${r.kf},${r.recorrido},${r.gal},${r.rendimiento},${r.costoKm}\n`;
+            const precioCSV = r.precio || '0.00';
+            csvContent += `"${r.fac}",${r.ki},${r.kf},${r.recorrido},${r.gal},${precioCSV},${r.rendimiento},${r.costoKm}\n`;
         });
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
@@ -467,7 +500,7 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swCode = `
-                const CACHE_NAME = 'flotilla-cache-v3';
+                const CACHE_NAME = 'flotilla-cache-v4';
                 self.addEventListener('install', event => {
                     event.waitUntil(
                         caches.open(CACHE_NAME).then(cache => {
