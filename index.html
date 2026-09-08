@@ -3,338 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Control de Gasolina</title>
-    <meta name="theme-color" content="#dc2626">
+    <title>Control de Combustible</title>
+    <meta name="theme-color" content="#1e293b">
     
     <!-- Manifest incrustado directamente para la PWA -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Control de Gasolina","short_name":"Gasolina","start_url":".","display":"standalone","background_color":"#f3f4f6","theme_color":"#dc2626","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3063/3063189.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Control de Combustible","short_name":"Combustible","start_url":".","display":"standalone","background_color":"#f1f5f9","theme_color":"#1e293b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3063/3063189.png","sizes":"512x512","type":"image/png"}]}'>
     
+    <!-- Tipografía e Iconos -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
+    <!-- Librerías Externas para OCR y Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        /* Paleta de colores más moderna y profesional */
+        /* Diseño Corporativo / Ejecutivo */
         :root { 
-            --primary: #dc2626; 
-            --primary-hover: #b91c1c;
-            --secondary: #1f2937; 
-            --success: #10b981; 
-            --success-hover: #059669;
-            --info: #3b82f6; 
-            --info-hover: #2563eb;
-            --bg: #f3f4f6; 
-            --surface: #ffffff; 
-            --text-main: #111827; 
-            --text-muted: #6b7280;
-            --border: #e5e7eb; 
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --bg-body: #f1f5f9; 
+            --bg-surface: #ffffff; 
+            --text-dark: #0f172a; 
+            --text-muted: #64748b; 
+            --primary: #1e293b;
+            --primary-hover: #334155;
+            --accent: #2563eb; 
+            --accent-hover: #1d4ed8;
+            --success: #0f766e; 
+            --success-hover: #115e59;
+            --danger: #ef4444;
+            --border: #e2e8f0; 
+            --radius: 8px; 
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
         }
 
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text-main); 
-            margin: 0; 
-            padding: 0 0 40px; 
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* Encabezado elegante */
-        .app-header { 
-            background: linear-gradient(135deg, var(--primary) 0%, #ef4444 100%);
-            color: white; 
-            padding: 24px 20px; 
-            text-align: center; 
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2); 
-            position: sticky; 
-            top: 0; 
-            z-index: 10; 
-        }
-        .app-header h1 { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            font-weight: 700; 
-            letter-spacing: -0.025em;
-        }
-
-        .container { 
-            max-width: 800px; 
-            margin: 24px auto; 
-            padding: 0 16px; 
-        }
-
-        /* Tarjetas con diseño limpio y sombra suave */
-        .card { 
-            background: var(--surface); 
-            padding: 28px; 
-            border-radius: var(--radius); 
-            box-shadow: var(--shadow); 
-            margin-bottom: 24px; 
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: box-shadow 0.3s ease;
-        }
-        .card:hover {
-            box-shadow: var(--shadow-hover);
-        }
-        .card h2 { 
-            color: var(--secondary); 
-            margin-top: 0; 
-            font-size: 1.25rem; 
-            font-weight: 600;
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            border-bottom: 1px solid var(--border); 
-            padding-bottom: 16px; 
-            margin-bottom: 24px; 
-        }
-
-        /* Campos de formulario modernos */
-        .input-group { margin-bottom: 18px; }
-        .input-group label { 
-            display: block; 
-            font-size: 0.875rem; 
-            font-weight: 500; 
-            color: var(--text-muted); 
-            margin-bottom: 8px; 
-        }
-        .grid-2 { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 16px; 
-        }
-        input { 
-            width: 100%; 
-            padding: 14px 16px; 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            font-size: 1rem; 
-            color: var(--text-main);
-            background-color: #f9fafb; 
-            box-sizing: border-box; 
-            transition: all 0.2s ease; 
-        }
-        input::placeholder { color: #9ca3af; }
-        input:focus { 
-            border-color: var(--primary); 
-            outline: none; 
-            background-color: var(--surface);
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
-        }
-
-        /* Botones con transiciones pulidas */
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            border: none; 
-            border-radius: 8px; 
-            color: white; 
-            font-size: 1rem; 
-            font-weight: 600; 
-            cursor: pointer; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 8px; 
-            transition: background-color 0.2s, transform 0.1s;
-        }
-        button:active { transform: translateY(1px); }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-dark); margin: 0; padding: 0 0 50px; -webkit-font-smoothing: antialiased; }
         
-        .btn-calc { background-color: var(--info); }
-        .btn-calc:hover { background-color: var(--info-hover); }
-        
-        .btn-guardar { background-color: var(--success); }
-        .btn-guardar:hover { background-color: var(--success-hover); }
-        
-        .btn-pdf { background-color: var(--secondary); margin-top: 20px; }
-        .btn-pdf:hover { background-color: #111827; }
-        
-        /* Botón de guardado pequeño arriba a la izquierda */
-        .btn-guardar-small { 
-            width: auto; 
-            padding: 8px 16px; 
-            font-size: 0.875rem; 
-            display: inline-flex; 
-            margin: 0 0 20px 0; 
-            border-radius: 6px;
-        }
-        
-        .btn-delete { 
-            background-color: #fee2e2; 
-            color: var(--primary); 
-            padding: 8px 12px; 
-            border-radius: 6px; 
-            width: auto; 
-            font-size: 1rem; 
-        }
-        .btn-delete:hover { background-color: #fecaca; }
+        .app-header { background-color: var(--primary); color: white; padding: 20px 24px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 10; border-bottom: 3px solid var(--accent); }
+        .app-header i { font-size: 1.5rem; color: #93c5fd; }
+        .app-header h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
 
-        /* Alertas y resultados */
-        .res-calc { 
-            background: #eff6ff; 
-            border-left: 4px solid var(--info); 
-            padding: 16px; 
-            border-radius: 0 8px 8px 0; 
-            margin-top: 24px; 
-            font-size: 0.95rem; 
-            color: #1e3a8a; 
-            line-height: 1.5;
-        }
-        .alert-text { color: var(--primary); font-weight: 700; display: block; margin-top: 8px; }
-
-        /* Tabla más limpia y profesional */
-        .table-wrapper { 
-            overflow-x: auto; 
-            border-radius: 8px; 
-            border: 1px solid var(--border); 
-            background: var(--surface);
-        }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 0.875rem; 
-            min-width: 700px; 
-        }
-        th, td { 
-            padding: 14px 16px; 
-            text-align: center; 
-            border-bottom: 1px solid var(--border); 
-        }
-        th { 
-            background: #f9fafb; 
-            color: var(--text-muted); 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-        }
-        tbody tr { transition: background-color 0.2s; }
-        tbody tr:hover { background-color: #f9fafb; }
+        .container { max-width: 850px; margin: 24px auto; padding: 0 16px; }
         
-        .badge { 
-            background: #fee2e2; 
-            color: var(--primary); 
-            padding: 4px 10px; 
-            border-radius: 9999px; /* Estilo píldora */
-            font-weight: 600; 
-            font-size: 0.8rem;
-        }
+        .card { background: var(--bg-surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--border); }
+        .card h2 { color: var(--text-dark); margin-top: 0; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .card h2 i { color: var(--accent); }
+        
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        input { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; color: var(--text-dark); background-color: #f8fafc; box-sizing: border-box; transition: all 0.2s; }
+        input:focus { border-color: var(--accent); outline: none; background-color: var(--bg-surface); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        button { width: 100%; padding: 12px 16px; border: none; border-radius: 6px; color: white; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s; }
+        button:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--accent); }
+        .btn-primary:hover { background-color: var(--accent-hover); }
+        .btn-success { background-color: var(--success); }
+        .btn-success:hover { background-color: var(--success-hover); }
+        .btn-secondary { background-color: var(--primary); }
+        .btn-secondary:hover { background-color: var(--primary-hover); }
+        
+        .btn-outline { background-color: transparent; border: 1px solid #cbd5e1; color: var(--text-dark); width: auto; padding: 8px 14px; font-size: 0.8rem; }
+        .btn-outline:hover { background-color: #f1f5f9; border-color: #94a3b8; }
+        .btn-icon-danger { background-color: transparent; color: var(--danger); font-size: 1rem; padding: 6px; width: auto; border-radius: 4px; }
+        .btn-icon-danger:hover { background-color: #fef2f2; }
 
-        /* Estilos de Impresión para Exportar a PDF Limpio (INACTO) */
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        
+        .alert-box { background: #f0fdfa; border-left: 4px solid var(--success); padding: 16px; border-radius: 4px; margin-top: 20px; font-size: 0.9rem; color: #134e4a; display: none; }
+        
+        .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 750px; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; }
+        tbody tr:hover { background-color: #f8fafc; }
+        .badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; border: 1px solid #bae6fd; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-content { background: white; padding: 32px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .modal-content h3 { margin-top: 0; color: var(--text-dark); display: flex; align-items: center; gap: 8px; font-size: 1.2rem; }
+        .modal-content p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
+
         @media print {
             body { background: white; padding: 0; }
-            .card { box-shadow: none; border: none; margin-bottom: 0; padding: 10px; }
-            .card:nth-child(1), .card:nth-child(2), .app-header { display: none !important; }
-            button, .btn-pdf, .btn-delete { display: none !important; }
-            .table-wrapper::before { content: "Historial de Rendimiento - Control de Gasolina"; font-size: 1.5rem; font-weight: bold; display: block; margin-bottom: 20px; text-align: center; color: black; }
-            table { border: 1px solid black; }
-            th, td { border: 1px solid #ccc; color: black; }
-            .badge { background: none; color: black; border: 1px solid black; }
+            .card { box-shadow: none; border: none; margin-bottom: 0; padding: 0; }
+            .card:nth-child(1), .card:nth-child(2), .card:nth-child(3), .app-header { display: none !important; }
+            button, .btn-icon-danger { display: none !important; }
+            .table-wrapper::before { content: "Reporte de Rendimiento - Control de Flotilla"; font-size: 1.25rem; font-weight: bold; display: block; margin-bottom: 20px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 10px; }
+            table { border: 1px solid #000; }
+            th, td { border: 1px solid #64748b; color: black; }
+            .badge { background: none; color: black; border: none; padding: 0; }
             th:last-child, td:last-child { display: none; }
         }
     </style>
 </head>
 <body>
 
-<div class="app-header">
-    <h1>Control de Gasolina</h1>
-</div>
+<header class="app-header">
+    <i class="fas fa-gas-pump"></i>
+    <h1>Control de Flotilla</h1>
+</header>
 
 <div class="container">
-    <!-- Calculadora -->
+    
+    <!-- Calculadora Inteligente -->
     <div class="card">
-        <h2>Calculadora De Gasolina ⛽</h2>
+        <h2><i class="fas fa-calculator"></i> Proyección De gasolina</h2>
         <div class="grid-2">
             <div class="input-group">
-                <label>KM a Recorrer</label>
+                <label>Kilómetros a Recorrer</label>
                 <input type="number" id="kmViaje" placeholder="Ej. 150">
             </div>
             <div class="input-group">
-                <label>Precio Galón (Q)</label>
+                <label>Precio del Galón (Q)</label>
                 <input type="number" id="precioGalon" placeholder="Ej. 30.50">
             </div>
         </div>
-        <button class="btn-calc" id="btnCalcular">Calcular Proyección</button>
-        <div id="resultadoProyeccion" class="res-calc" style="display: none;"></div>
+        <button class="btn-secondary" id="btnCalcular"><i class="fas fa-chart-pie"></i> Calcular Estimación</button>
+        <div id="resultadoProyeccion" class="alert-box" style="border-left-color: var(--accent); background: #eff6ff; color: #1e3a8a;"></div>
     </div>
 
-    <!-- Nuevo Registro -->
+    <!-- Registro y OCR -->
     <div class="card">
-        <!-- Botón de guardado ubicado arriba a la izquierda en pequeño -->
-        <div style="text-align: left;">
-            <button class="btn-guardar btn-guardar-small" id="btnGuardar">💾 Guardar Registro</button>
+        <div class="header-actions">
+            <h2><i class="fas fa-file-invoice-dollar"></i> Registro de Carga</h2>
+            <div style="text-align: right;">
+                <button class="btn-outline" id="btnOCR"><i class="fas fa-camera"></i> Escanear Factura</button>
+                <input type="file" id="inputFactura" accept="image/*" capture="environment" style="display: none;">
+                <div id="ocrStatus" style="display: none; font-size: 0.7rem; color: var(--accent); margin-top: 8px; font-weight: 600;"></div>
+            </div>
         </div>
         
-        <h2>⛽ Nuevo Registro</h2>
         <div class="input-group">
-            <label>No. Factura</label>
-            <input type="text" id="f" placeholder="Opcional / Identificador">
+            <label>Referencia / Documento / Fecha</label>
+            <input type="text" id="f" placeholder="Ej. Factura #12345">
         </div>
         <div class="grid-2">
             <div class="input-group">
-                <label>KM Inicial</label>
+                <label>Odómetro Inicial</label>
                 <input type="number" id="ki" placeholder="Ej. 5000">
             </div>
             <div class="input-group">
-                <label>KM Final</label>
+                <label>Odómetro Final</label>
                 <input type="number" id="kf" placeholder="Ej. 5200">
             </div>
         </div>
         <div class="grid-2">
             <div class="input-group">
-                <label>Galones Cargados</label>
+                <label>Volumen (Galones)</label>
                 <input type="number" id="gal" step="0.001" placeholder="Ej. 2.500">
             </div>
             <div class="input-group">
-                <label>Costo Total (Q)</label>
+                <label>Monto Facturado (Q)</label>
                 <input type="number" id="costo" step="0.01" placeholder="Ej. 75.00">
             </div>
         </div>
+        
+        <button class="btn-success" id="btnGuardar" style="margin-top: 10px;"><i class="fas fa-save"></i> Guardar en Base de Datos</button>
     </div>
 
-    <!-- Historial -->
+    <!-- Gráfica de Rendimiento -->
     <div class="card">
-        <h2>📋 Historial de Rendimiento</h2>
+        <h2><i class="fas fa-chart-line"></i> Análisis de Rendimiento Histórico</h2>
+        <canvas id="chartRendimiento" height="90"></canvas>
+    </div>
+
+    <!-- Historial y Backup -->
+    <div class="card">
+        <h2><i class="fas fa-table"></i> Base de Datos Histórica</h2>
+        
+        <div class="grid-2" style="margin-bottom: 16px;">
+            <button class="btn-outline" id="btnBackup"><i class="fas fa-download"></i> Guardar Copia de Seguridad</button>
+            <button class="btn-outline" onclick="document.getElementById('inputRestore').click()"><i class="fas fa-upload"></i> Restaurar Copia</button>
+            <input type="file" id="inputRestore" accept=".json" style="display: none;">
+        </div>
+
         <div class="table-wrapper">
             <table id="tablaHistorial">
                 <thead>
                     <tr>
-                        <th>Fac.</th>
-                        <th>KM Inic.</th>
-                        <th>KM Fin.</th>
-                        <th>Recorrido</th>
+                        <th>Referencia</th>
+                        <th>Odo. Inic.</th>
+                        <th>Odo. Fin.</th>
+                        <th>Distancia</th>
                         <th>Galones</th>
-                        <th>Rend.(km/gal)</th>
+                        <th>Eficiencia</th>
                         <th>Costo/KM</th>
-                        <th>Acción</th>
+                        <th style="text-align: center;">Acción</th>
                     </tr>
                 </thead>
                 <tbody id="bodyHistorial">
-                    <!-- Registros dinámicos -->
+                    <!-- Registros inyectados por JS -->
                 </tbody>
             </table>
         </div>
-        <button class="btn-pdf" id="btnExportarPDF">📄 Exportar a PDF</button>
+        <div class="grid-2" style="margin-top: 24px;">
+            <button class="btn-outline" id="btnExportarPDF"><i class="fas fa-file-pdf"></i> Generar Reporte PDF</button>
+            <button class="btn-primary" id="btnExportarCSV"><i class="fas fa-file-excel"></i> Exportar a CSV (Excel)</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Corporativo -->
+<div id="ventanaResumen" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="color: var(--success);"><i class="fas fa-check-circle"></i> Transacción Exitosa</h3>
+        <p id="textoResumen"></p>
+        <button class="btn-secondary" onclick="document.getElementById('ventanaResumen').style.display='none'" style="margin-top: 24px;">Aceptar y Continuar</button>
     </div>
 </div>
 
 <script>
-    // Lógica de la calculadora de proyecciones
+    let historialArray = JSON.parse(localStorage.getItem('gasolinaHistorial')) || [];
+    let chartInstance = null;
+    const CAPACIDAD_TANQUE_AKT = 2.7; 
+
+    window.addEventListener('load', () => {
+        const ultimoKM = localStorage.getItem('kmMotoGuardado');
+        if (ultimoKM) document.getElementById('ki').value = ultimoKM;
+        
+        const fechaHoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        document.getElementById('f').value = `Reg: ${fechaHoy}`;
+        
+        renderizarTabla();
+        actualizarGrafica();
+    });
+
+    // OCR
+    document.getElementById('btnOCR').addEventListener('click', () => document.getElementById('inputFactura').click());
+    
+    document.getElementById('inputFactura').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const status = document.getElementById('ocrStatus');
+        status.style.display = 'block';
+        status.style.color = '#2563eb';
+        status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando documento...';
+
+        try {
+            const result = await Tesseract.recognize(file, 'spa');
+            const texto = result.data.text.toLowerCase();
+
+            const matchGal = texto.match(/(?:gal|galones|volumen)[\s:;\.]*([\d]+[\.,][\d]+)/i);
+            const matchCosto = texto.match(/(?:total|q\.|q|quetzales)[\s:;\.]*([\d]+[\.,][\d]+)/i);
+
+            if (matchGal) document.getElementById('gal').value = matchGal[1].replace(',', '.');
+            if (matchCosto) document.getElementById('costo').value = matchCosto[1].replace(',', '.');
+
+            status.style.color = '#0f766e';
+            status.innerHTML = '<i class="fas fa-check"></i> Extracción exitosa. Verifique los campos.';
+            setTimeout(() => status.style.display = 'none', 5000);
+        } catch (error) {
+            status.style.color = '#ef4444';
+            status.innerHTML = '<i class="fas fa-times"></i> Error de lectura. Ingrese manualmente.';
+        }
+    });
+
+    // Calculadora Inteligente
     document.getElementById('btnCalcular').addEventListener('click', () => {
         const km = parseFloat(document.getElementById('kmViaje').value);
         const precio = parseFloat(document.getElementById('precioGalon').value);
         const res = document.getElementById('resultadoProyeccion');
         
         if (km && precio) {
-            const galonesEstimados = km / 40; // Rendimiento estimado base de 40 km/gal
+            let rendimientoPromedio = 110; 
+            
+            if (historialArray.length > 0) {
+                const totalRecorrido = historialArray.reduce((acc, curr) => acc + parseFloat(curr.recorrido), 0);
+                const totalGalones = historialArray.reduce((acc, curr) => acc + parseFloat(curr.gal), 0);
+                if (totalGalones > 0) {
+                    rendimientoPromedio = totalRecorrido / totalGalones;
+                }
+            }
+
+            const galonesEstimados = km / rendimientoPromedio; 
             const costoEstimado = galonesEstimados * precio;
+            const tanquesNecesarios = galonesEstimados / CAPACIDAD_TANQUE_AKT;
+            let textoTanque = "";
+            
+            if (tanquesNecesarios > 1) {
+                textoTanque = `Equivale a <b>${tanquesNecesarios.toFixed(1)} tanques</b> de tu AKT 150 GT.`;
+            } else {
+                const porcentajeTanque = (tanquesNecesarios * 100).toFixed(0);
+                textoTanque = `Consumirás el <b>${porcentajeTanque}%</b> de tu tanque.`;
+            }
+
             res.style.display = 'block';
-            res.innerHTML = `Para <b>${km} km</b> necesitarás aprox. <b>${galonesEstimados.toFixed(2)} galones</b>.<br><span class="alert-text">Costo Estimado: Q${costoEstimado.toFixed(2)}</span>`;
+            res.innerHTML = `
+                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 8px; border-bottom: 1px solid #bfdbfe; padding-bottom: 6px;">
+                    <i class="fas fa-brain"></i> Rendimiento base: <b>${rendimientoPromedio.toFixed(1)} km/gal</b>
+                </div>
+                Para <b>${km} km</b> se estiman <b>${galonesEstimados.toFixed(2)} galones</b>.<br>
+                <span style="font-size: 0.85rem; color: #475569; display: block; margin-top: 4px;"><i class="fas fa-motorcycle"></i> ${textoTanque}</span>
+                <strong style="color: #0f172a; display: block; margin-top: 10px; font-size: 1.05rem;">Presupuesto Total: Q${costoEstimado.toFixed(2)}</strong>
+            `;
         }
     });
 
-    // Guardado de registro y actualización del historial
+    // Guardar Datos
     document.getElementById('btnGuardar').addEventListener('click', () => {
         const fac = document.getElementById('f').value || '-';
         const ki = parseFloat(document.getElementById('ki').value);
@@ -347,47 +314,168 @@
             const rendimiento = recorrido / gal;
             const costoKm = costo / recorrido;
 
-            const tbody = document.getElementById('bodyHistorial');
-            const tr = document.createElement('tr');
-            
-            tr.innerHTML = `
-                <td>${fac}</td>
-                <td>${ki}</td>
-                <td>${kf}</td>
-                <td>${recorrido}</td>
-                <td>${gal.toFixed(2)}</td>
-                <td>${rendimiento.toFixed(2)}</td>
-                <td><span class="badge">Q${costoKm.toFixed(2)}</span></td>
-                <td><button class="btn-delete" onclick="this.parentElement.parentElement.remove()">🗑️</button></td>
-            `;
-            
-            tbody.prepend(tr); 
-            
-            // Limpia los campos dejando el KM final como el nuevo KM inicial
-            document.getElementById('f').value = '';
+            const nuevoRegistro = {
+                id: Date.now(), fac, ki, kf, recorrido, 
+                gal: gal.toFixed(3), 
+                rendimiento: rendimiento.toFixed(2), 
+                costoKm: costoKm.toFixed(2)
+            };
+
+            historialArray.unshift(nuevoRegistro);
+            localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+            localStorage.setItem('kmMotoGuardado', kf);
+
             document.getElementById('ki').value = kf;
             document.getElementById('kf').value = '';
             document.getElementById('gal').value = '';
             document.getElementById('costo').value = '';
+            
+            renderizarTabla();
+            actualizarGrafica();
+
+            document.getElementById('textoResumen').innerHTML = `
+                El registro se ha procesado correctamente.<br><br>
+                Distancia Registrada: <b style="color:#0f172a;">${recorrido} km</b><br>
+                Eficiencia: <b style="color:#0f172a;">${rendimiento.toFixed(2)} km/gal</b><br>
+                Gasto por KM: <b style="color:#0f766e;">Q${costoKm.toFixed(2)}</b>
+            `;
+            document.getElementById('ventanaResumen').style.display = 'flex';
         } else {
-            alert("Por favor verifica los datos. El KM Final debe ser mayor al Inicial.");
+            alert("Validación fallida: Asegúrese de llenar los campos y que el Odómetro Final sea mayor al Inicial.");
         }
     });
 
-    // Función para Exportar a PDF (Usa la herramienta del navegador)
-    document.getElementById('btnExportarPDF').addEventListener('click', () => {
-        window.print(); 
+    function renderizarTabla() {
+        const tbody = document.getElementById('bodyHistorial');
+        tbody.innerHTML = '';
+        historialArray.forEach(reg => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${reg.fac}</strong></td>
+                <td>${reg.ki}</td>
+                <td>${reg.kf}</td>
+                <td>${reg.recorrido} km</td>
+                <td>${reg.gal}</td>
+                <td>${reg.rendimiento}</td>
+                <td><span class="badge">Q${reg.costoKm}</span></td>
+                <td style="text-align: center;"><button class="btn-icon-danger" onclick="borrarRegistro(${reg.id})" title="Eliminar"><i class="fas fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.borrarRegistro = function(id) {
+        if(confirm("¿Confirma la eliminación de este registro histórico?")) {
+            historialArray = historialArray.filter(reg => reg.id !== id);
+            localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+            renderizarTabla();
+            actualizarGrafica();
+        }
+    };
+
+    function actualizarGrafica() {
+        const ctx = document.getElementById('chartRendimiento').getContext('2d');
+        const datosGrafica = [...historialArray].slice(0, 10).reverse();
+        const labels = datosGrafica.map(r => r.fac.substring(0, 10));
+        const data = datosGrafica.map(r => parseFloat(r.rendimiento));
+
+        if(chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Eficiencia (km/gal)',
+                    data: data,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#1e293b',
+                    pointRadius: 4
+                }]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: false, grid: { color: '#e2e8f0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // --- COPIAS DE SEGURIDAD (BACKUP / RESTORE) ---
+    document.getElementById('btnBackup').addEventListener('click', () => {
+        if(historialArray.length === 0) return alert("No hay datos para respaldar.");
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(historialArray));
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Backup_Gasolina.json");
+        dlAnchorElem.click();
     });
 
-    // Activación del Modo Offline (Service Worker inyectado mediante un Blob)
+    document.getElementById('inputRestore').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                const importedData = JSON.parse(evt.target.result);
+                if (Array.isArray(importedData)) {
+                    historialArray = importedData;
+                    localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+                    if (historialArray.length > 0) {
+                        localStorage.setItem('kmMotoGuardado', historialArray[0].kf);
+                        document.getElementById('ki').value = historialArray[0].kf;
+                    }
+                    renderizarTabla();
+                    actualizarGrafica();
+                    alert("✅ Base de datos restaurada correctamente.");
+                } else {
+                    alert("❌ Formato de archivo inválido.");
+                }
+            } catch (err) {
+                alert("❌ Error al procesar el archivo.");
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // Exportaciones PDF/CSV
+    document.getElementById('btnExportarPDF').addEventListener('click', () => window.print());
+
+    document.getElementById('btnExportarCSV').addEventListener('click', () => {
+        if (historialArray.length === 0) return alert("Base de datos vacía.");
+        let csvContent = "data:text/csv;charset=utf-8,Referencia,Odometro Inicial,Odometro Final,Distancia(km),Galones,Eficiencia(km/gal),Costo por KM(Q)\n";
+        historialArray.forEach(r => {
+            csvContent += `"${r.fac}",${r.ki},${r.kf},${r.recorrido},${r.gal},${r.rendimiento},${r.costoKm}\n`;
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "Reporte_Flotilla.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    // PWA
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swCode = `
-                const CACHE_NAME = 'gasolina-cache-v2';
+                const CACHE_NAME = 'flotilla-cache-v3';
                 self.addEventListener('install', event => {
                     event.waitUntil(
                         caches.open(CACHE_NAME).then(cache => {
-                            return cache.addAll([location.href.split('#')[0].split('?')[0]]);
+                            return cache.addAll([
+                                location.href.split('#')[0].split('?')[0],
+                                'https://cdn.jsdelivr.net/npm/chart.js',
+                                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'
+                            ]);
                         })
                     );
                 });
@@ -399,13 +487,10 @@
                     );
                 });
             `;
-            
             const blob = new Blob([swCode], { type: 'application/javascript' });
-            const swUrl = URL.createObjectURL(blob);
-            
-            navigator.serviceWorker.register(swUrl)
-                .then(reg => console.log('Modo sin conexión activado correctamente.'))
-                .catch(err => console.error('Error al iniciar modo offline.', err));
+            navigator.serviceWorker.register(URL.createObjectURL(blob))
+                .then(() => console.log('Modo PWA Empresarial Activo'))
+                .catch(err => console.error('Error PWA', err));
         });
     }
 </script>
