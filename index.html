@@ -42,7 +42,7 @@
         .app-header i { font-size: 1.5rem; color: #93c5fd; }
         .app-header h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
 
-        .container { max-width: 850px; margin: 24px auto; padding: 0 16px; }
+        .container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
         
         .card { background: var(--bg-surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--border); }
         .card h2 { color: var(--text-dark); margin-top: 0; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -66,16 +66,16 @@
         
         .btn-outline { background-color: transparent; border: 1px solid #cbd5e1; color: var(--text-dark); width: auto; padding: 8px 14px; font-size: 0.8rem; }
         .btn-outline:hover { background-color: #f1f5f9; border-color: #94a3b8; }
-        .btn-icon-danger { background-color: transparent; color: var(--danger); font-size: 1rem; padding: 6px; width: auto; border-radius: 4px; }
-        .btn-icon-danger:hover { background-color: #fef2f2; }
+        .btn-icon-action { background-color: transparent; font-size: 1rem; padding: 6px; width: auto; border-radius: 4px; transition: all 0.2s; }
+        .btn-icon-action:hover { background-color: #f1f5f9; }
 
         .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         
         .alert-box { background: #f0fdfa; border-left: 4px solid var(--success); padding: 16px; border-radius: 4px; margin-top: 20px; font-size: 0.9rem; color: #134e4a; display: none; }
         
         .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 900px; }
-        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 950px; }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
         th { background: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; }
         tbody tr:hover { background-color: #f8fafc; }
         .badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; border: 1px solid #bae6fd; }
@@ -93,7 +93,7 @@
             body { background: white; padding: 0; }
             .card { box-shadow: none; border: none; margin-bottom: 0; padding: 0; }
             .card:nth-child(1), .card:nth-child(2), .card:nth-child(3), .app-header { display: none !important; }
-            button, .btn-icon-danger { display: none !important; }
+            button, .btn-icon-action { display: none !important; }
             .table-wrapper::before { content: "Reporte de Rendimiento - Control de Flotilla"; font-size: 1.25rem; font-weight: bold; display: block; margin-bottom: 20px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 10px; }
             table { border: 1px solid #000; }
             th, td { border: 1px solid #64748b; color: black; }
@@ -165,7 +165,6 @@
             </div>
         </div>
         
-        <!-- Novedad: Selector de Combustible -->
         <div class="grid-2">
             <div class="input-group">
                 <label>Tipo de Combustible</label>
@@ -210,9 +209,10 @@
                         <th>Distancia</th>
                         <th>Galones</th>
                         <th>Prec/Gal(Q)</th>
+                        <th>Total(Q)</th>
                         <th>Eficiencia</th>
                         <th>Costo/KM</th>
-                        <th style="text-align: center;">Acción</th>
+                        <th style="text-align: center; min-width: 140px;">Acción</th>
                     </tr>
                 </thead>
                 <tbody id="bodyHistorial">
@@ -239,7 +239,23 @@
 <script>
     let historialArray = JSON.parse(localStorage.getItem('gasolinaHistorial')) || [];
     let chartInstance = null;
+    let idEditando = null;
     const CAPACIDAD_TANQUE_AKT = 2.7; 
+
+    // --- AUTOCOMPLETADO MATEMÁTICO (MONTO TOTAL) ---
+    const inGal = document.getElementById('gal');
+    const inPre = document.getElementById('precio');
+    const inCos = document.getElementById('costo');
+
+    inGal.addEventListener('input', () => {
+        if(inGal.value && inPre.value) inCos.value = (parseFloat(inGal.value) * parseFloat(inPre.value)).toFixed(2);
+    });
+    inPre.addEventListener('input', () => {
+        if(inGal.value && inPre.value) inCos.value = (parseFloat(inGal.value) * parseFloat(inPre.value)).toFixed(2);
+    });
+    inCos.addEventListener('input', () => {
+        if(inGal.value && inCos.value) inPre.value = (parseFloat(inCos.value) / parseFloat(inGal.value)).toFixed(2);
+    });
 
     window.addEventListener('load', () => {
         const ultimoKM = localStorage.getItem('kmMotoGuardado');
@@ -281,7 +297,6 @@
                 document.getElementById('precio').value = matchLinea[2].replace(',', '.');
                 document.getElementById('costo').value = matchLinea[3].replace(',', '.');
             } else {
-                // Alternativa: Buscar el número con 3 decimales (Casi siempre es la CANTIDAD de galones)
                 const match3Dec = texto.match(/(\d+[\.,]\d{3})/);
                 if (match3Dec) {
                     document.getElementById('gal').value = match3Dec[1].replace(',', '.');
@@ -290,13 +305,15 @@
                     if (matchGalFallback) document.getElementById('gal').value = matchGalFallback[1].replace(',', '.');
                 }
 
-                // Buscar Totales y Precios
                 const matchCosto = texto.match(/(?:total|q\.|valor)[\s\S]{0,15}?([\d]+[\.,][\d]{2})/i);
                 if (matchCosto) document.getElementById('costo').value = matchCosto[1].replace(',', '.');
 
                 const matchPrecio = texto.match(/(?:precio|prec)[\s\S]{0,15}?([\d]+[\.,][\d]{2})/i);
                 if (matchPrecio) document.getElementById('precio').value = matchPrecio[1].replace(',', '.');
             }
+
+            // Disparar autocompletado en caso de que falte uno
+            inGal.dispatchEvent(new Event('input'));
 
             status.style.color = '#0f766e';
             status.innerHTML = '<i class="fas fa-check"></i> Extracción exitosa. Verifique los números.';
@@ -307,7 +324,7 @@
         }
     });
 
-    // Calculadora Inteligente
+    // --- CALCULADORA INTELIGENTE ---
     document.getElementById('btnCalcular').addEventListener('click', () => {
         const km = parseFloat(document.getElementById('kmViaje').value);
         const precio = parseFloat(document.getElementById('precioGalon').value);
@@ -319,9 +336,7 @@
             if (historialArray.length > 0) {
                 const totalRecorrido = historialArray.reduce((acc, curr) => acc + parseFloat(curr.recorrido), 0);
                 const totalGalones = historialArray.reduce((acc, curr) => acc + parseFloat(curr.gal), 0);
-                if (totalGalones > 0) {
-                    rendimientoPromedio = totalRecorrido / totalGalones;
-                }
+                if (totalGalones > 0) rendimientoPromedio = totalRecorrido / totalGalones;
             }
 
             const galonesEstimados = km / rendimientoPromedio; 
@@ -348,40 +363,60 @@
         }
     });
 
-    // Guardar Datos
+    // --- GUARDAR O ACTUALIZAR REGISTRO ---
     document.getElementById('btnGuardar').addEventListener('click', () => {
         const fac = document.getElementById('f').value || '-';
         const tipoComb = document.getElementById('tipoComb').value;
         const ki = parseFloat(document.getElementById('ki').value);
         const kf = parseFloat(document.getElementById('kf').value);
         const gal = parseFloat(document.getElementById('gal').value);
-        const costo = parseFloat(document.getElementById('costo').value);
+        let costoVal = parseFloat(document.getElementById('costo').value);
         let precioVal = parseFloat(document.getElementById('precio').value);
 
-        if (ki && kf && gal && costo && kf > ki) {
+        if (ki && kf && gal && (costoVal || precioVal) && kf > ki) {
             
-            // Autocompletar precio si se dejó vacío haciendo la matemática
-            if(!precioVal || isNaN(precioVal)) {
-                precioVal = costo / gal;
-            }
+            if(!precioVal || isNaN(precioVal)) precioVal = costoVal / gal;
+            if(!costoVal || isNaN(costoVal)) costoVal = gal * precioVal;
 
             const recorrido = kf - ki;
             const rendimiento = recorrido / gal;
-            const costoKm = costo / recorrido;
+            const costoKm = costoVal / recorrido;
 
-            const nuevoRegistro = {
-                id: Date.now(), fac, tipoComb, ki, kf, recorrido, 
+            const datosProcesados = {
+                fac, tipoComb, ki, kf, recorrido, 
                 gal: gal.toFixed(3), 
                 precio: precioVal.toFixed(2),
+                costo: costoVal.toFixed(2),
                 rendimiento: rendimiento.toFixed(2), 
                 costoKm: costoKm.toFixed(2)
             };
 
-            historialArray.unshift(nuevoRegistro);
-            localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
-            localStorage.setItem('kmMotoGuardado', kf);
+            if(idEditando) {
+                // Modo Edición
+                const index = historialArray.findIndex(r => r.id === idEditando);
+                if(index !== -1) {
+                    historialArray[index] = { ...historialArray[index], ...datosProcesados };
+                }
+                idEditando = null;
+                const btn = document.getElementById('btnGuardar');
+                btn.innerHTML = '<i class="fas fa-save"></i> Guardar en Base de Datos';
+                btn.classList.replace('btn-primary', 'btn-success');
+                
+                // Si editó el registro más reciente, actualizar la memoria del kilometraje
+                if (index === 0) localStorage.setItem('kmMotoGuardado', kf);
+                
+            } else {
+                // Modo Nuevo Registro
+                datosProcesados.id = Date.now();
+                historialArray.unshift(datosProcesados);
+                localStorage.setItem('kmMotoGuardado', kf);
+            }
 
-            document.getElementById('ki').value = kf;
+            localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+
+            // Restaurar Formulario y leer la memoria de KM
+            const kmMemoria = localStorage.getItem('kmMotoGuardado');
+            document.getElementById('ki').value = kmMemoria || kf;
             document.getElementById('kf').value = '';
             document.getElementById('gal').value = '';
             document.getElementById('precio').value = '';
@@ -391,11 +426,11 @@
             actualizarGrafica();
 
             document.getElementById('textoResumen').innerHTML = `
-                Se guardó exitosamente.<br><br>
+                El registro se ha procesado con éxito.<br><br>
                 Gasolina: <b>${tipoComb}</b><br>
                 Distancia Registrada: <b style="color:#0f172a;">${recorrido} km</b><br>
                 Eficiencia: <b style="color:#0f172a;">${rendimiento.toFixed(2)} km/gal</b><br>
-                Gasto por KM: <b style="color:#0f766e;">Q${costoKm.toFixed(2)}</b>
+                Total Facturado: <b style="color:#0f766e;">Q${costoVal.toFixed(2)}</b>
             `;
             document.getElementById('ventanaResumen').style.display = 'flex';
         } else {
@@ -403,11 +438,60 @@
         }
     });
 
+    // --- ACCIONES DE LA TABLA (Mover, Editar, Eliminar) ---
+    window.moverRegistro = function(index, direccion) {
+        if (direccion === -1 && index > 0) { // Subir
+            const temp = historialArray[index];
+            historialArray[index] = historialArray[index - 1];
+            historialArray[index - 1] = temp;
+        } else if (direccion === 1 && index < historialArray.length - 1) { // Bajar
+            const temp = historialArray[index];
+            historialArray[index] = historialArray[index + 1];
+            historialArray[index + 1] = temp;
+        }
+        localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+        renderizarTabla();
+    };
+
+    window.editarRegistro = function(id) {
+        const reg = historialArray.find(r => r.id === id);
+        if(!reg) return;
+        
+        document.getElementById('f').value = reg.fac;
+        document.getElementById('tipoComb').value = reg.tipoComb || 'Regular';
+        document.getElementById('ki').value = reg.ki;
+        document.getElementById('kf').value = reg.kf;
+        document.getElementById('gal').value = reg.gal;
+        document.getElementById('precio').value = reg.precio || '';
+        
+        // Retro-compatibilidad para registros viejos que no tenían 'costo' guardado
+        const costoPrecargado = reg.costo ? reg.costo : (reg.precio ? (parseFloat(reg.gal) * parseFloat(reg.precio)).toFixed(2) : '');
+        document.getElementById('costo').value = costoPrecargado;
+
+        idEditando = id;
+        
+        // Cambiar el estilo del botón
+        const btn = document.getElementById('btnGuardar');
+        btn.innerHTML = '<i class="fas fa-edit"></i> Actualizar Registro';
+        btn.classList.replace('btn-success', 'btn-primary');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.borrarRegistro = function(id) {
+        if(confirm("¿Confirma la eliminación de este registro histórico?")) {
+            historialArray = historialArray.filter(reg => reg.id !== id);
+            localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+            renderizarTabla();
+            actualizarGrafica();
+        }
+    };
+
     function renderizarTabla() {
         const tbody = document.getElementById('bodyHistorial');
         tbody.innerHTML = '';
-        historialArray.forEach(reg => {
+        historialArray.forEach((reg, index) => {
             const precioMostrado = reg.precio ? `Q${reg.precio}` : '-'; 
+            const costoMostrado = reg.costo ? `Q${reg.costo}` : `Q${(parseFloat(reg.gal) * parseFloat(reg.precio||0)).toFixed(2)}`;
             const claseBadgeTipo = reg.tipoComb === 'Súper' ? 'badge-super' : 'badge-regular';
             const tipoCombTexto = reg.tipoComb || 'Regular';
 
@@ -420,22 +504,19 @@
                 <td>${reg.recorrido} km</td>
                 <td>${reg.gal}</td>
                 <td>${precioMostrado}</td>
+                <td><strong>${costoMostrado}</strong></td>
                 <td>${reg.rendimiento}</td>
                 <td><span class="badge">Q${reg.costoKm}</span></td>
-                <td style="text-align: center;"><button class="btn-icon-danger" onclick="borrarRegistro(${reg.id})" title="Eliminar"><i class="fas fa-trash"></i></button></td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <button class="btn-icon-action" style="color: #2563eb;" onclick="editarRegistro(${reg.id})" title="Editar"><i class="fas fa-pen"></i></button>
+                    <button class="btn-icon-action" style="color: #64748b;" onclick="moverRegistro(${index}, -1)" title="Mover Arriba"><i class="fas fa-arrow-up"></i></button>
+                    <button class="btn-icon-action" style="color: #64748b;" onclick="moverRegistro(${index}, 1)" title="Mover Abajo"><i class="fas fa-arrow-down"></i></button>
+                    <button class="btn-icon-action" style="color: #ef4444;" onclick="borrarRegistro(${reg.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </td>
             `;
             tbody.appendChild(tr);
         });
     }
-
-    window.borrarRegistro = function(id) {
-        if(confirm("¿Confirma la eliminación de este registro histórico?")) {
-            historialArray = historialArray.filter(reg => reg.id !== id);
-            localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
-            renderizarTabla();
-            actualizarGrafica();
-        }
-    };
 
     function actualizarGrafica() {
         const ctx = document.getElementById('chartRendimiento').getContext('2d');
@@ -514,11 +595,12 @@
 
     document.getElementById('btnExportarCSV').addEventListener('click', () => {
         if (historialArray.length === 0) return alert("Base de datos vacía.");
-        let csvContent = "data:text/csv;charset=utf-8,Referencia,Tipo Combustible,Odometro Inicial,Odometro Final,Distancia(km),Galones,Precio/Galon(Q),Eficiencia(km/gal),Costo por KM(Q)\n";
+        let csvContent = "data:text/csv;charset=utf-8,Referencia,Tipo Combustible,Odometro Inicial,Odometro Final,Distancia(km),Galones,Precio/Galon(Q),Monto Total(Q),Eficiencia(km/gal),Costo por KM(Q)\n";
         historialArray.forEach(r => {
             const precioCSV = r.precio || '0.00';
+            const costoCSV = r.costo || (parseFloat(r.gal) * parseFloat(r.precio||0)).toFixed(2);
             const tipoCSV = r.tipoComb || 'Regular';
-            csvContent += `"${r.fac}","${tipoCSV}",${r.ki},${r.kf},${r.recorrido},${r.gal},${precioCSV},${r.rendimiento},${r.costoKm}\n`;
+            csvContent += `"${r.fac}","${tipoCSV}",${r.ki},${r.kf},${r.recorrido},${r.gal},${precioCSV},${costoCSV},${r.rendimiento},${r.costoKm}\n`;
         });
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
@@ -533,7 +615,7 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swCode = `
-                const CACHE_NAME = 'flotilla-cache-v5';
+                const CACHE_NAME = 'flotilla-cache-v6';
                 self.addEventListener('install', event => {
                     event.waitUntil(
                         caches.open(CACHE_NAME).then(cache => {
@@ -555,7 +637,6 @@
             `;
             const blob = new Blob([swCode], { type: 'application/javascript' });
             navigator.serviceWorker.register(URL.createObjectURL(blob))
-                .then(() => console.log('Modo PWA Empresarial Activo'))
                 .catch(err => console.error('Error PWA', err));
         });
     }
