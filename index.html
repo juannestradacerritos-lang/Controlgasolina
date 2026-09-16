@@ -42,7 +42,7 @@
         .app-header i { font-size: 1.5rem; color: #93c5fd; }
         .app-header h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
 
-        .container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+        .container { max-width: 850px; margin: 24px auto; padding: 0 16px; }
         
         .card { background: var(--bg-surface); padding: 24px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--border); }
         .card h2 { color: var(--text-dark); margin-top: 0; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -66,12 +66,14 @@
         
         .btn-outline { background-color: transparent; border: 1px solid #cbd5e1; color: var(--text-dark); width: auto; padding: 8px 14px; font-size: 0.8rem; }
         .btn-outline:hover { background-color: #f1f5f9; border-color: #94a3b8; }
+        .btn-icon-danger { background-color: transparent; color: var(--danger); font-size: 1rem; padding: 6px; width: auto; border-radius: 4px; }
+        .btn-icon-danger:hover { background-color: #fef2f2; }
         .btn-icon-action { background-color: transparent; font-size: 1rem; padding: 6px; width: auto; border-radius: 4px; transition: all 0.2s; }
         .btn-icon-action:hover { background-color: #f1f5f9; }
 
         .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         
-        .alert-box { background: #f0fdfa; border-left: 4px solid var(--success); padding: 16px; border-radius: 4px; margin-top: 20px; font-size: 0.9rem; color: #134e4a; display: none; }
+        .alert-box { background: #f0fdfa; border-left: 4px solid var(--success); padding: 16px; border-radius: 4px; margin-top: 20px; font-size: 0.9rem; color: #134e4a; display: none; line-height: 1.5; }
         
         .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 950px; }
@@ -80,7 +82,6 @@
         tbody tr:hover { background-color: #f8fafc; }
         .badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; border: 1px solid #bae6fd; }
         
-        /* Etiquetas de Tipo de Combustible */
         .badge-regular { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
         .badge-super { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
 
@@ -89,16 +90,23 @@
         .modal-content h3 { margin-top: 0; color: var(--text-dark); display: flex; align-items: center; gap: 8px; font-size: 1.2rem; }
         .modal-content p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
 
+        /* ====== OPTIMIZACIÓN IMPRESIÓN PDF PERFECTO ====== */
         @media print {
-            body { background: white; padding: 0; }
-            .card { box-shadow: none; border: none; margin-bottom: 0; padding: 0; }
+            @page { size: landscape; margin: 10mm; } 
+            body { background: white !important; padding: 0 !important; color: black !important; }
+            .card { box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0 !important; }
             .card:nth-child(1), .card:nth-child(2), .card:nth-child(3), .app-header { display: none !important; }
-            button, .btn-icon-action { display: none !important; }
-            .table-wrapper::before { content: "Reporte de Rendimiento - Control de Flotilla"; font-size: 1.25rem; font-weight: bold; display: block; margin-bottom: 20px; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #0f172a; padding-bottom: 10px; }
-            table { border: 1px solid #000; }
-            th, td { border: 1px solid #64748b; color: black; }
-            .badge, .badge-regular, .badge-super { background: none; color: black; border: none; padding: 0; }
-            th:last-child, td:last-child { display: none; }
+            .card h2, .grid-2, button, .btn-icon-action, .btn-icon-danger { display: none !important; }
+            
+            .table-wrapper { overflow: visible !important; border: none !important; }
+            .table-wrapper::before { content: "Reporte de Rendimiento - Control de Flotilla"; font-size: 14pt; font-weight: bold; display: block; margin-bottom: 10px; color: black; text-transform: uppercase; border-bottom: 2px solid black; padding-bottom: 5px; }
+            
+            table { border: 1px solid black !important; min-width: 100% !important; font-size: 8pt !important; width: 100% !important; table-layout: auto; }
+            th, td { border: 1px solid black !important; color: black !important; padding: 6px 4px !important; text-align: center !important; }
+            th { background-color: #f1f5f9 !important; font-size: 7.5pt !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
+            
+            .badge, .badge-regular, .badge-super { background: transparent !important; color: black !important; border: none !important; padding: 0 !important; font-weight: bold !important; text-transform: none; }
+            th:last-child, td:last-child { display: none !important; }
         }
     </style>
 </head>
@@ -111,27 +119,40 @@
 
 <div class="container">
     
-    <!-- Calculadora Inteligente -->
+    <!-- Calculadora Inteligente de Proyección (Doble Función) -->
     <div class="card">
-        <h2><i class="fas fa-calculator"></i> Proyección De gasolina</h2>
+        <h2><i class="fas fa-calculator"></i> Calculadora y Proyección</h2>
+        
         <div class="grid-2">
             <div class="input-group">
-                <label>Kilómetros a Recorrer</label>
-                <input type="number" id="kmViaje" placeholder="Ej. 150">
+                <label>Precio del Galón (Q)</label>
+                <input type="number" id="projPrecio" placeholder="Ej. 38.57">
             </div>
             <div class="input-group">
-                <label>Precio del Galón (Q)</label>
-                <input type="number" id="precioGalon" placeholder="Ej. 38.57">
+                <label>Capacidad del Tanque (Gal)</label>
+                <input type="number" id="projTanque" value="2.7" placeholder="Ej. 2.7">
             </div>
         </div>
-        <button class="btn-secondary" id="btnCalcular"><i class="fas fa-chart-pie"></i> Calcular Estimación</button>
+        
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Km Recorrer</label>
+                <input type="number" id="projKM" placeholder="Ej. 150">
+            </div>
+            <div class="input-group">
+                <label>Calculo a Cargar</label>
+                <input type="number" id="projMonto" placeholder="Ej. 10.00">
+            </div>
+        </div>
+        
+        <button class="btn-secondary" id="btnCalcular"><i class="fas fa-bolt"></i> Calcular Estimación</button>
         <div id="resultadoProyeccion" class="alert-box" style="border-left-color: var(--accent); background: #eff6ff; color: #1e3a8a;"></div>
     </div>
 
     <!-- Registro y OCR -->
     <div class="card">
         <div class="header-actions">
-            <h2><i class="fas fa-file-invoice-dollar"></i> Registro de Carga</h2>
+            <h2><i class="fas fa-file-invoice-dollar"></i> Registro de Carga Oficial</h2>
             <div style="text-align: right;">
                 <button class="btn-outline" id="btnOCR"><i class="fas fa-camera"></i> Escanear Factura</button>
                 <input type="file" id="inputFactura" accept="image/*" capture="environment" style="display: none;">
@@ -240,26 +261,41 @@
     let historialArray = JSON.parse(localStorage.getItem('gasolinaHistorial')) || [];
     let chartInstance = null;
     let idEditando = null;
-    const CAPACIDAD_TANQUE_AKT = 2.7; 
 
-    // --- AUTOCOMPLETADO MATEMÁTICO (MONTO TOTAL) ---
+    // --- AUTOCOMPLETADO MATEMÁTICO (MAGIA DE CÁLCULO) ---
     const inGal = document.getElementById('gal');
     const inPre = document.getElementById('precio');
     const inCos = document.getElementById('costo');
 
     inGal.addEventListener('input', () => {
-        if(inGal.value && inPre.value) inCos.value = (parseFloat(inGal.value) * parseFloat(inPre.value)).toFixed(2);
+        const gal = parseFloat(inGal.value);
+        const pre = parseFloat(inPre.value);
+        if(!isNaN(gal) && !isNaN(pre)) inCos.value = (gal * pre).toFixed(2);
     });
     inPre.addEventListener('input', () => {
-        if(inGal.value && inPre.value) inCos.value = (parseFloat(inGal.value) * parseFloat(inPre.value)).toFixed(2);
+        const gal = parseFloat(inGal.value);
+        const pre = parseFloat(inPre.value);
+        const cos = parseFloat(inCos.value);
+        if(!isNaN(pre) && !isNaN(cos) && isNaN(gal)) {
+            inGal.value = (cos / pre).toFixed(3);
+        } else if(!isNaN(pre) && !isNaN(gal)) {
+            inCos.value = (gal * pre).toFixed(2);
+        }
     });
     inCos.addEventListener('input', () => {
-        if(inGal.value && inCos.value) inPre.value = (parseFloat(inCos.value) / parseFloat(inGal.value)).toFixed(2);
+        const cos = parseFloat(inCos.value);
+        const pre = parseFloat(inPre.value);
+        if(!isNaN(cos) && !isNaN(pre) && pre > 0) {
+            inGal.value = (cos / pre).toFixed(3);
+        }
     });
 
     window.addEventListener('load', () => {
         const ultimoKM = localStorage.getItem('kmMotoGuardado');
         if (ultimoKM) document.getElementById('ki').value = ultimoKM;
+        
+        const tanqueGuardado = localStorage.getItem('capacidadTanque');
+        if (tanqueGuardado) document.getElementById('projTanque').value = tanqueGuardado;
         
         const fechaHoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
         document.getElementById('f').value = `Reg: ${fechaHoy}`;
@@ -284,11 +320,9 @@
             const result = await Tesseract.recognize(file, 'spa');
             const texto = result.data.text.toLowerCase();
 
-            // Detectar automáticamente si es Regular o Súper
             if (texto.includes('regular')) document.getElementById('tipoComb').value = 'Regular';
             if (texto.includes('super') || texto.includes('súper')) document.getElementById('tipoComb').value = 'Súper';
 
-            // Buscar la línea exacta de la gasolinera (Ej: 1.738 A-S REGULAR D 38.57 67.03)
             const regexLineaGasolinera = /([\d]+[\.,][\d]{3})\s+.*?(?:regular|s[uú]per|diesel|v-power).*?\s+([\d]+[\.,][\d]{2})\s+([\d]+[\.,][\d]{2})/i;
             const matchLinea = texto.match(regexLineaGasolinera);
 
@@ -312,7 +346,6 @@
                 if (matchPrecio) document.getElementById('precio').value = matchPrecio[1].replace(',', '.');
             }
 
-            // Disparar autocompletado en caso de que falte uno
             inGal.dispatchEvent(new Event('input'));
 
             status.style.color = '#0f766e';
@@ -324,42 +357,79 @@
         }
     });
 
-    // --- CALCULADORA INTELIGENTE ---
+    // --- CALCULADORA DE PROYECCIÓN (Mejorada) ---
     document.getElementById('btnCalcular').addEventListener('click', () => {
-        const km = parseFloat(document.getElementById('kmViaje').value);
-        const precio = parseFloat(document.getElementById('precioGalon').value);
+        const km = parseFloat(document.getElementById('projKM').value);
+        const monto = parseFloat(document.getElementById('projMonto').value);
+        const precio = parseFloat(document.getElementById('projPrecio').value);
+        const capacidadTanque = parseFloat(document.getElementById('projTanque').value) || 2.7;
         const res = document.getElementById('resultadoProyeccion');
         
-        if (km && precio) {
-            let rendimientoPromedio = 110; 
-            
-            if (historialArray.length > 0) {
-                const totalRecorrido = historialArray.reduce((acc, curr) => acc + parseFloat(curr.recorrido), 0);
-                const totalGalones = historialArray.reduce((acc, curr) => acc + parseFloat(curr.gal), 0);
-                if (totalGalones > 0) rendimientoPromedio = totalRecorrido / totalGalones;
-            }
+        if (!precio) {
+            alert("Por favor ingresa el Precio del Galón (Q) para poder calcular.");
+            return;
+        }
 
+        // Guardar la capacidad del tanque preferida
+        localStorage.setItem('capacidadTanque', capacidadTanque);
+
+        let rendimientoPromedio = 110; 
+        if (historialArray.length > 0) {
+            const totalRecorrido = historialArray.reduce((acc, curr) => acc + parseFloat(curr.recorrido), 0);
+            const totalGalones = historialArray.reduce((acc, curr) => acc + parseFloat(curr.gal), 0);
+            if (totalGalones > 0) rendimientoPromedio = totalRecorrido / totalGalones;
+        }
+
+        let htmlRes = `<div style="font-size: 0.8rem; color: #64748b; margin-bottom: 12px; border-bottom: 1px solid #bfdbfe; padding-bottom: 8px;"><i class="fas fa-brain"></i> Usando rendimiento base: <b>${rendimientoPromedio.toFixed(1)} km/gal</b></div>`;
+        let calculoHecho = false;
+
+        if (km) {
             const galonesEstimados = km / rendimientoPromedio; 
             const costoEstimado = galonesEstimados * precio;
-            const tanquesNecesarios = galonesEstimados / CAPACIDAD_TANQUE_AKT;
+            const tanquesNecesarios = galonesEstimados / capacidadTanque;
             let textoTanque = "";
             
             if (tanquesNecesarios > 1) {
-                textoTanque = `Equivale a <b>${tanquesNecesarios.toFixed(1)} tanques</b> de tu AKT 150 GT.`;
+                const tanquesEnteros = Math.floor(tanquesNecesarios);
+                const porcentajeSobrante = ((tanquesNecesarios - tanquesEnteros) * 100).toFixed(0);
+                
+                if (porcentajeSobrante == 0) {
+                    textoTanque = `Necesitarás exactamente <b>${tanquesEnteros} tanques llenos</b> de tu vehículo.`;
+                } else {
+                    let textoS = tanquesEnteros === 1 ? '1 tanque lleno' : `${tanquesEnteros} tanques llenos`;
+                    textoTanque = `Tendrás que recargar en el camino. Usarás <b>${textoS} y un ${porcentajeSobrante}% adicional</b>.`;
+                }
             } else {
                 const porcentajeTanque = (tanquesNecesarios * 100).toFixed(0);
-                textoTanque = `Consumirás el <b>${porcentajeTanque}%</b> de tu tanque.`;
+                textoTanque = `Consumirás el <b>${porcentajeTanque}%</b> de tu tanque (No necesitas recargar).`;
             }
+            
+            htmlRes += `
+                <div style="margin-bottom: 12px;">
+                    Para <b>${km} km</b> necesitas <b>${galonesEstimados.toFixed(3)} galones</b>.<br>
+                    <span style="font-size:0.75rem; color:#64748b; display: block; margin-top: 4px;"><i class="fas fa-motorcycle"></i> ${textoTanque}</span>
+                    <strong style="color: #0f172a; display: block; margin-top: 10px;">Total a Cargar: Q${costoEstimado.toFixed(2)}</strong>
+                </div>`;
+            calculoHecho = true;
+        }
 
+        if (monto) {
+            const galonesComprados = monto / precio;
+            const kmEstimados = galonesComprados * rendimientoPromedio;
+            
+            htmlRes += `
+                <div>
+                    Con <b>Q${monto.toFixed(2)}</b> obtendrás <b>${galonesComprados.toFixed(3)} galones</b>.<br>
+                    <strong style="color: #0f766e; display: block; margin-top: 4px;">Te alcanzará para recorrer: ${kmEstimados.toFixed(1)} km aprox.</strong>
+                </div>`;
+            calculoHecho = true;
+        }
+
+        if(calculoHecho) {
             res.style.display = 'block';
-            res.innerHTML = `
-                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 8px; border-bottom: 1px solid #bfdbfe; padding-bottom: 6px;">
-                    <i class="fas fa-brain"></i> Rendimiento base: <b>${rendimientoPromedio.toFixed(1)} km/gal</b>
-                </div>
-                Para <b>${km} km</b> se estiman <b>${galonesEstimados.toFixed(2)} galones</b>.<br>
-                <span style="font-size: 0.85rem; color: #475569; display: block; margin-top: 4px;"><i class="fas fa-motorcycle"></i> ${textoTanque}</span>
-                <strong style="color: #0f172a; display: block; margin-top: 10px; font-size: 1.05rem;">Presupuesto Total: Q${costoEstimado.toFixed(2)}</strong>
-            `;
+            res.innerHTML = htmlRes;
+        } else {
+            alert("Ingresa los Km Recorrer o el Calculo a Cargar para ver la estimación.");
         }
     });
 
@@ -392,7 +462,6 @@
             };
 
             if(idEditando) {
-                // Modo Edición
                 const index = historialArray.findIndex(r => r.id === idEditando);
                 if(index !== -1) {
                     historialArray[index] = { ...historialArray[index], ...datosProcesados };
@@ -402,11 +471,9 @@
                 btn.innerHTML = '<i class="fas fa-save"></i> Guardar en Base de Datos';
                 btn.classList.replace('btn-primary', 'btn-success');
                 
-                // Si editó el registro más reciente, actualizar la memoria del kilometraje
                 if (index === 0) localStorage.setItem('kmMotoGuardado', kf);
                 
             } else {
-                // Modo Nuevo Registro
                 datosProcesados.id = Date.now();
                 historialArray.unshift(datosProcesados);
                 localStorage.setItem('kmMotoGuardado', kf);
@@ -414,7 +481,6 @@
 
             localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
 
-            // Restaurar Formulario y leer la memoria de KM
             const kmMemoria = localStorage.getItem('kmMotoGuardado');
             document.getElementById('ki').value = kmMemoria || kf;
             document.getElementById('kf').value = '';
@@ -438,13 +504,13 @@
         }
     });
 
-    // --- ACCIONES DE LA TABLA (Mover, Editar, Eliminar) ---
+    // --- ACCIONES DE LA TABLA ---
     window.moverRegistro = function(index, direccion) {
-        if (direccion === -1 && index > 0) { // Subir
+        if (direccion === -1 && index > 0) { 
             const temp = historialArray[index];
             historialArray[index] = historialArray[index - 1];
             historialArray[index - 1] = temp;
-        } else if (direccion === 1 && index < historialArray.length - 1) { // Bajar
+        } else if (direccion === 1 && index < historialArray.length - 1) { 
             const temp = historialArray[index];
             historialArray[index] = historialArray[index + 1];
             historialArray[index + 1] = temp;
@@ -464,26 +530,15 @@
         document.getElementById('gal').value = reg.gal;
         document.getElementById('precio').value = reg.precio || '';
         
-        // Retro-compatibilidad para registros viejos que no tenían 'costo' guardado
         const costoPrecargado = reg.costo ? reg.costo : (reg.precio ? (parseFloat(reg.gal) * parseFloat(reg.precio)).toFixed(2) : '');
         document.getElementById('costo').value = costoPrecargado;
 
         idEditando = id;
         
-        // Cambiar el estilo del botón
         const btn = document.getElementById('btnGuardar');
         btn.innerHTML = '<i class="fas fa-edit"></i> Actualizar Registro';
         btn.classList.replace('btn-success', 'btn-primary');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.borrarRegistro = function(id) {
-        if(confirm("¿Confirma la eliminación de este registro histórico?")) {
-            historialArray = historialArray.filter(reg => reg.id !== id);
-            localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
-            renderizarTabla();
-            actualizarGrafica();
-        }
     };
 
     function renderizarTabla() {
@@ -517,6 +572,15 @@
             tbody.appendChild(tr);
         });
     }
+
+    window.borrarRegistro = function(id) {
+        if(confirm("¿Confirma la eliminación de este registro histórico?")) {
+            historialArray = historialArray.filter(reg => reg.id !== id);
+            localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+            renderizarTabla();
+            actualizarGrafica();
+        }
+    };
 
     function actualizarGrafica() {
         const ctx = document.getElementById('chartRendimiento').getContext('2d');
@@ -615,7 +679,7 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swCode = `
-                const CACHE_NAME = 'flotilla-cache-v6';
+                const CACHE_NAME = 'flotilla-cache-v12';
                 self.addEventListener('install', event => {
                     event.waitUntil(
                         caches.open(CACHE_NAME).then(cache => {
