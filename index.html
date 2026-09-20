@@ -98,7 +98,6 @@
         .modal-content h3 { margin-top: 0; color: var(--text-dark); display: flex; align-items: center; gap: 8px; font-size: 1.2rem; }
         .modal-content p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
 
-        /* OPTIMIZACIÓN IMPRESIÓN PDF PERFECTO */
         @media print {
             @page { size: landscape; margin: 10mm; } 
             body { background: white !important; padding: 0 !important; color: black !important; }
@@ -287,7 +286,6 @@
         measurementId: "G-7311KL7GTK"
     };
     
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     
@@ -297,27 +295,45 @@
     let idEditando = null;
     let nubeSincronizada = false;
 
+    // --- NUEVO: BORRADOR AUTOMÁTICO (PROTECCIÓN ANTI-CIERRE DE PESTAÑA) ---
+    const camposBorrador = ['projPrecio', 'projTanque', 'projKM', 'projMonto', 'f', 'ki', 'kf', 'gal', 'precio', 'tipoComb', 'costo'];
+    
+    function guardarBorrador() {
+        const borrador = {};
+        camposBorrador.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) borrador[id] = el.value;
+        });
+        localStorage.setItem('flotillaBorrador', JSON.stringify(borrador));
+    }
+
+    camposBorrador.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', guardarBorrador);
+            el.addEventListener('change', guardarBorrador);
+        }
+    });
+
     // --- MONITOREO DE CONEXIÓN A LA NUBE ---
     database.ref('.info/connected').on('value', function(snap) {
         const iconNube = document.getElementById('iconNube');
         const textNube = document.getElementById('textNube');
         if (snap.val() === true) {
-            iconNube.style.color = '#10b981'; // Verde
+            iconNube.style.color = '#10b981';
             textNube.innerText = 'Online';
             nubeSincronizada = true;
         } else {
-            iconNube.style.color = '#ef4444'; // Rojo
+            iconNube.style.color = '#ef4444'; 
             textNube.innerText = 'Offline';
             nubeSincronizada = false;
         }
     });
 
-    // --- ESCUCHAR DATOS DE LA NUBE EN TIEMPO REAL ---
     database.ref('FlotillaApp/Historial').on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             historialArray = data;
-            // Actualizar respaldo local
             localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
             if (historialArray.length > 0) {
                 localStorage.setItem('kmMotoGuardado', historialArray[0].kf);
@@ -327,7 +343,6 @@
         }
     });
 
-    // Función principal para empujar cambios a Firebase
     function sincronizarNube() {
         if (nubeSincronizada) {
             database.ref('FlotillaApp/Historial').set(historialArray);
@@ -344,7 +359,10 @@
     inGal.addEventListener('input', () => {
         const gal = parseFloat(inGal.value);
         const pre = parseFloat(inPre.value);
-        if(!isNaN(gal) && !isNaN(pre)) inCos.value = (gal * pre).toFixed(2);
+        if(!isNaN(gal) && !isNaN(pre)) {
+            inCos.value = (gal * pre).toFixed(2);
+            guardarBorrador();
+        }
     });
     inPre.addEventListener('input', () => {
         const gal = parseFloat(inGal.value);
@@ -352,8 +370,10 @@
         const cos = parseFloat(inCos.value);
         if(!isNaN(pre) && !isNaN(cos) && isNaN(gal)) {
             inGal.value = (cos / pre).toFixed(3);
+            guardarBorrador();
         } else if(!isNaN(pre) && !isNaN(gal)) {
             inCos.value = (gal * pre).toFixed(2);
+            guardarBorrador();
         }
     });
     inCos.addEventListener('input', () => {
@@ -361,11 +381,11 @@
         const pre = parseFloat(inPre.value);
         if(!isNaN(cos) && !isNaN(pre) && pre > 0) {
             inGal.value = (cos / pre).toFixed(3);
+            guardarBorrador();
         }
     });
 
     window.addEventListener('load', () => {
-        // Inicializar datos locales antes de que Firebase responda
         const ultimoKM = localStorage.getItem('kmMotoGuardado');
         if (ultimoKM) document.getElementById('ki').value = ultimoKM;
         
@@ -373,9 +393,19 @@
             const tk = snap.val() || localStorage.getItem('capacidadTanque') || 2.7;
             document.getElementById('projTanque').value = tk;
         });
-        
-        const fechaHoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        document.getElementById('f').value = `Reg: ${fechaHoy}`;
+
+        // Revisar si existe un Borrador sin terminar
+        const borrador = JSON.parse(localStorage.getItem('flotillaBorrador'));
+        if (borrador) {
+            camposBorrador.forEach(id => {
+                if (borrador[id] !== undefined && borrador[id] !== "") {
+                    document.getElementById(id).value = borrador[id];
+                }
+            });
+        } else {
+            const fechaHoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            document.getElementById('f').value = `Reg: ${fechaHoy}`;
+        }
         
         renderizarTabla();
         actualizarGrafica();
@@ -424,6 +454,8 @@
             }
 
             inGal.dispatchEvent(new Event('input'));
+            guardarBorrador();
+
             status.style.color = '#0f766e';
             status.innerHTML = '<i class="fas fa-check"></i> Extracción exitosa. Verifique los números.';
             setTimeout(() => status.style.display = 'none', 6000);
@@ -443,7 +475,6 @@
         
         if (!precio) return alert("Por favor ingresa el Precio del Galón (Q) para calcular.");
 
-        // Guardar configuración de tanque local y nube
         localStorage.setItem('capacidadTanque', capacidadTanque);
         database.ref('FlotillaApp/Config/CapacidadTanque').set(capacidadTanque);
 
@@ -556,6 +587,9 @@
             localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
             sincronizarNube();
 
+            // Borrar el borrador de seguridad cuando todo se guarda con éxito
+            localStorage.removeItem('flotillaBorrador');
+
             const kmMemoria = localStorage.getItem('kmMotoGuardado');
             document.getElementById('ki').value = kmMemoria || kf;
             document.getElementById('kf').value = '';
@@ -610,6 +644,7 @@
         document.getElementById('costo').value = costoPrecargado;
 
         idEditando = id;
+        guardarBorrador(); // Forzar guardado al editar
         
         const btn = document.getElementById('btnGuardar');
         btn.innerHTML = '<i class="fas fa-edit"></i> Actualizar en la Nube';
@@ -757,7 +792,7 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swCode = `
-                const CACHE_NAME = 'flotilla-cache-v13';
+                const CACHE_NAME = 'flotilla-cache-v14';
                 self.addEventListener('install', event => {
                     event.waitUntil(
                         caches.open(CACHE_NAME).then(cache => {
