@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
-    <!-- Firebase SDK (Versión de compatibilidad estable para HTML directo) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -293,9 +293,8 @@
     let historialArray = JSON.parse(localStorage.getItem('gasolinaHistorial')) || [];
     let chartInstance = null;
     let idEditando = null;
-    let nubeSincronizada = false;
 
-    // --- NUEVO: BORRADOR AUTOMÁTICO (PROTECCIÓN ANTI-CIERRE DE PESTAÑA) ---
+    // --- BORRADOR AUTOMÁTICO (PROTECCIÓN ANTI-CIERRE) ---
     const camposBorrador = ['projPrecio', 'projTanque', 'projKM', 'projMonto', 'f', 'ki', 'kf', 'gal', 'precio', 'tipoComb', 'costo'];
     
     function guardarBorrador() {
@@ -322,11 +321,9 @@
         if (snap.val() === true) {
             iconNube.style.color = '#10b981';
             textNube.innerText = 'Online';
-            nubeSincronizada = true;
         } else {
             iconNube.style.color = '#ef4444'; 
             textNube.innerText = 'Offline';
-            nubeSincronizada = false;
         }
     });
 
@@ -344,11 +341,10 @@
     });
 
     function sincronizarNube() {
-        if (nubeSincronizada) {
-            database.ref('FlotillaApp/Historial').set(historialArray);
-            const km = localStorage.getItem('kmMotoGuardado');
-            if(km) database.ref('FlotillaApp/Config/UltimoKM').set(km);
-        }
+        // Enviar a la nube. Si no hay internet, Firebase lo pone en cola y lo envía apenas se conecte.
+        database.ref('FlotillaApp/Historial').set(historialArray);
+        const km = localStorage.getItem('kmMotoGuardado');
+        if(km) database.ref('FlotillaApp/Config/UltimoKM').set(km);
     }
 
     // --- AUTOCOMPLETADO MATEMÁTICO ---
@@ -394,7 +390,7 @@
             document.getElementById('projTanque').value = tk;
         });
 
-        // Revisar si existe un Borrador sin terminar
+        // Restaurar el borrador automático si existe
         const borrador = JSON.parse(localStorage.getItem('flotillaBorrador'));
         if (borrador) {
             camposBorrador.forEach(id => {
@@ -587,7 +583,7 @@
             localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
             sincronizarNube();
 
-            // Borrar el borrador de seguridad cuando todo se guarda con éxito
+            // ¡IMPORTANTE! Limpiar el borrador porque ya se guardó la factura oficialmente
             localStorage.removeItem('flotillaBorrador');
 
             const kmMemoria = localStorage.getItem('kmMotoGuardado');
@@ -644,7 +640,7 @@
         document.getElementById('costo').value = costoPrecargado;
 
         idEditando = id;
-        guardarBorrador(); // Forzar guardado al editar
+        guardarBorrador(); 
         
         const btn = document.getElementById('btnGuardar');
         btn.innerHTML = '<i class="fas fa-edit"></i> Actualizar en la Nube';
@@ -788,32 +784,13 @@
         document.body.removeChild(link);
     });
 
-    // PWA
+    // --- PWA: REGISTRO DE SERVICE WORKER FÍSICO ---
+    // NOTA: Para que funcione sin internet, debes crear un archivo "sw.js" en GitHub 
+    // con el código del Service Worker, ya que los virtuales se borran al cerrar la pestaña.
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            const swCode = `
-                const CACHE_NAME = 'flotilla-cache-v14';
-                self.addEventListener('install', event => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME).then(cache => {
-                            return cache.addAll([
-                                location.href.split('#')[0].split('?')[0],
-                                'https://cdn.jsdelivr.net/npm/chart.js',
-                                'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'
-                            ]);
-                        })
-                    );
-                });
-                self.addEventListener('fetch', event => {
-                    event.respondWith(
-                        caches.match(event.request).then(response => {
-                            return response || fetch(event.request);
-                        })
-                    );
-                });
-            `;
-            const blob = new Blob([swCode], { type: 'application/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(blob))
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Modo Offline Permanente Activo'))
                 .catch(err => console.error('Error PWA', err));
         });
     }
