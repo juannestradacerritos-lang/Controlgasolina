@@ -13,6 +13,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
+    <!-- Firebase SDK (Versión de compatibilidad estable para HTML directo) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <!-- Librerías Externas para OCR y Gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -38,9 +42,13 @@
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-dark); margin: 0; padding: 0 0 50px; -webkit-font-smoothing: antialiased; }
         
-        .app-header { background-color: var(--primary); color: white; padding: 20px 24px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 10; border-bottom: 3px solid var(--accent); }
-        .app-header i { font-size: 1.5rem; color: #93c5fd; }
-        .app-header h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
+        .app-header { background-color: var(--primary); color: white; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 0; z-index: 10; border-bottom: 3px solid var(--accent); }
+        .app-header-left { display: flex; align-items: center; gap: 12px; }
+        .app-header-left i { font-size: 1.5rem; color: #93c5fd; }
+        .app-header-left h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; }
+        
+        .cloud-status { display: flex; flex-direction: column; align-items: flex-end; font-size: 0.7rem; font-weight: 600; color: #94a3b8; }
+        .cloud-status i { font-size: 1.2rem; margin-top: 2px; }
 
         .container { max-width: 850px; margin: 24px auto; padding: 0 16px; }
         
@@ -90,7 +98,7 @@
         .modal-content h3 { margin-top: 0; color: var(--text-dark); display: flex; align-items: center; gap: 8px; font-size: 1.2rem; }
         .modal-content p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
 
-        /* ====== OPTIMIZACIÓN IMPRESIÓN PDF PERFECTO ====== */
+        /* OPTIMIZACIÓN IMPRESIÓN PDF PERFECTO */
         @media print {
             @page { size: landscape; margin: 10mm; } 
             body { background: white !important; padding: 0 !important; color: black !important; }
@@ -113,13 +121,20 @@
 <body>
 
 <header class="app-header">
-    <i class="fas fa-gas-pump"></i>
-    <h1>Control de Flotilla</h1>
+    <div class="app-header-left">
+        <i class="fas fa-gas-pump"></i>
+        <h1>Control de Flotilla</h1>
+    </div>
+    <!-- Indicador de Nube -->
+    <div class="cloud-status">
+        <span id="textNube">Conectando...</span>
+        <i id="iconNube" class="fas fa-cloud"></i>
+    </div>
 </header>
 
 <div class="container">
     
-    <!-- Calculadora Inteligente de Proyección (Doble Función) -->
+    <!-- Calculadora Inteligente de Proyección -->
     <div class="card">
         <h2><i class="fas fa-calculator"></i> Calculadora y Proyección</h2>
         
@@ -140,7 +155,7 @@
                 <input type="number" id="projKM" placeholder="Ej. 150">
             </div>
             <div class="input-group">
-                <label>Calculo a Cargar</label>
+                <label>Calculo a Cargar (Q)</label>
                 <input type="number" id="projMonto" placeholder="Ej. 10.00">
             </div>
         </div>
@@ -200,7 +215,7 @@
             </div>
         </div>
         
-        <button class="btn-success" id="btnGuardar" style="margin-top: 10px;"><i class="fas fa-save"></i> Guardar en Base de Datos</button>
+        <button class="btn-success" id="btnGuardar" style="margin-top: 10px;"><i class="fas fa-cloud-upload-alt"></i> Guardar en la Nube</button>
     </div>
 
     <!-- Gráfica de Rendimiento -->
@@ -214,8 +229,8 @@
         <h2><i class="fas fa-table"></i> Base de Datos Histórica</h2>
         
         <div class="grid-2" style="margin-bottom: 16px;">
-            <button class="btn-outline" id="btnBackup"><i class="fas fa-download"></i> Guardar Copia</button>
-            <button class="btn-outline" onclick="document.getElementById('inputRestore').click()"><i class="fas fa-upload"></i> Restaurar Copia</button>
+            <button class="btn-outline" id="btnBackup"><i class="fas fa-download"></i> Guardar Copia Local</button>
+            <button class="btn-outline" onclick="document.getElementById('inputRestore').click()"><i class="fas fa-upload"></i> Restaurar Copia Local</button>
             <input type="file" id="inputRestore" accept=".json" style="display: none;">
         </div>
 
@@ -258,11 +273,70 @@
 </div>
 
 <script>
+    // ==========================================
+    // CONFIGURACIÓN DE FIREBASE (LA NUBE)
+    // ==========================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyC4usCsv7vxYrqd_R3GefHecy1ZgPFivjU",
+        authDomain: "controlcilco.firebaseapp.com",
+        databaseURL: "https://controlcilco-default-rtdb.firebaseio.com",
+        projectId: "controlcilco",
+        storageBucket: "controlcilco.firebasestorage.app",
+        messagingSenderId: "952205287411",
+        appId: "1:952205287411:web:c69e678f0830318bf8bc86",
+        measurementId: "G-7311KL7GTK"
+    };
+    
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
+    // Variables Globales
     let historialArray = JSON.parse(localStorage.getItem('gasolinaHistorial')) || [];
     let chartInstance = null;
     let idEditando = null;
+    let nubeSincronizada = false;
 
-    // --- AUTOCOMPLETADO MATEMÁTICO (MAGIA DE CÁLCULO) ---
+    // --- MONITOREO DE CONEXIÓN A LA NUBE ---
+    database.ref('.info/connected').on('value', function(snap) {
+        const iconNube = document.getElementById('iconNube');
+        const textNube = document.getElementById('textNube');
+        if (snap.val() === true) {
+            iconNube.style.color = '#10b981'; // Verde
+            textNube.innerText = 'Online';
+            nubeSincronizada = true;
+        } else {
+            iconNube.style.color = '#ef4444'; // Rojo
+            textNube.innerText = 'Offline';
+            nubeSincronizada = false;
+        }
+    });
+
+    // --- ESCUCHAR DATOS DE LA NUBE EN TIEMPO REAL ---
+    database.ref('FlotillaApp/Historial').on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            historialArray = data;
+            // Actualizar respaldo local
+            localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+            if (historialArray.length > 0) {
+                localStorage.setItem('kmMotoGuardado', historialArray[0].kf);
+            }
+            renderizarTabla();
+            actualizarGrafica();
+        }
+    });
+
+    // Función principal para empujar cambios a Firebase
+    function sincronizarNube() {
+        if (nubeSincronizada) {
+            database.ref('FlotillaApp/Historial').set(historialArray);
+            const km = localStorage.getItem('kmMotoGuardado');
+            if(km) database.ref('FlotillaApp/Config/UltimoKM').set(km);
+        }
+    }
+
+    // --- AUTOCOMPLETADO MATEMÁTICO ---
     const inGal = document.getElementById('gal');
     const inPre = document.getElementById('precio');
     const inCos = document.getElementById('costo');
@@ -291,11 +365,14 @@
     });
 
     window.addEventListener('load', () => {
+        // Inicializar datos locales antes de que Firebase responda
         const ultimoKM = localStorage.getItem('kmMotoGuardado');
         if (ultimoKM) document.getElementById('ki').value = ultimoKM;
         
-        const tanqueGuardado = localStorage.getItem('capacidadTanque');
-        if (tanqueGuardado) document.getElementById('projTanque').value = tanqueGuardado;
+        database.ref('FlotillaApp/Config/CapacidadTanque').once('value').then((snap) => {
+            const tk = snap.val() || localStorage.getItem('capacidadTanque') || 2.7;
+            document.getElementById('projTanque').value = tk;
+        });
         
         const fechaHoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
         document.getElementById('f').value = `Reg: ${fechaHoy}`;
@@ -304,7 +381,7 @@
         actualizarGrafica();
     });
 
-    // --- OCR: ENTRENADO PARA FACTURAS ESTILO "UNO" Y SIMILARES ---
+    // --- OCR ESCÁNER ---
     document.getElementById('btnOCR').addEventListener('click', () => document.getElementById('inputFactura').click());
     
     document.getElementById('inputFactura').addEventListener('change', async (e) => {
@@ -347,7 +424,6 @@
             }
 
             inGal.dispatchEvent(new Event('input'));
-
             status.style.color = '#0f766e';
             status.innerHTML = '<i class="fas fa-check"></i> Extracción exitosa. Verifique los números.';
             setTimeout(() => status.style.display = 'none', 6000);
@@ -357,7 +433,7 @@
         }
     });
 
-    // --- CALCULADORA DE PROYECCIÓN (Mejorada) ---
+    // --- CALCULADORA DE PROYECCIÓN ---
     document.getElementById('btnCalcular').addEventListener('click', () => {
         const km = parseFloat(document.getElementById('projKM').value);
         const monto = parseFloat(document.getElementById('projMonto').value);
@@ -365,13 +441,11 @@
         const capacidadTanque = parseFloat(document.getElementById('projTanque').value) || 2.7;
         const res = document.getElementById('resultadoProyeccion');
         
-        if (!precio) {
-            alert("Por favor ingresa el Precio del Galón (Q) para poder calcular.");
-            return;
-        }
+        if (!precio) return alert("Por favor ingresa el Precio del Galón (Q) para calcular.");
 
-        // Guardar la capacidad del tanque preferida
+        // Guardar configuración de tanque local y nube
         localStorage.setItem('capacidadTanque', capacidadTanque);
+        database.ref('FlotillaApp/Config/CapacidadTanque').set(capacidadTanque);
 
         let rendimientoPromedio = 110; 
         if (historialArray.length > 0) {
@@ -397,7 +471,7 @@
                     textoTanque = `Necesitarás exactamente <b>${tanquesEnteros} tanques llenos</b> de tu vehículo.`;
                 } else {
                     let textoS = tanquesEnteros === 1 ? '1 tanque lleno' : `${tanquesEnteros} tanques llenos`;
-                    textoTanque = `Tendrás que recargar en el camino. Usarás <b>${textoS} y un ${porcentajeSobrante}% adicional</b>.`;
+                    textoTanque = `Tendrás que recargar. Usarás <b>${textoS} y un ${porcentajeSobrante}% adicional</b>.`;
                 }
             } else {
                 const porcentajeTanque = (tanquesNecesarios * 100).toFixed(0);
@@ -468,7 +542,7 @@
                 }
                 idEditando = null;
                 const btn = document.getElementById('btnGuardar');
-                btn.innerHTML = '<i class="fas fa-save"></i> Guardar en Base de Datos';
+                btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Guardar en la Nube';
                 btn.classList.replace('btn-primary', 'btn-success');
                 
                 if (index === 0) localStorage.setItem('kmMotoGuardado', kf);
@@ -480,6 +554,7 @@
             }
 
             localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+            sincronizarNube();
 
             const kmMemoria = localStorage.getItem('kmMotoGuardado');
             document.getElementById('ki').value = kmMemoria || kf;
@@ -492,7 +567,7 @@
             actualizarGrafica();
 
             document.getElementById('textoResumen').innerHTML = `
-                El registro se ha procesado con éxito.<br><br>
+                El registro se guardó de forma segura.<br><br>
                 Gasolina: <b>${tipoComb}</b><br>
                 Distancia Registrada: <b style="color:#0f172a;">${recorrido} km</b><br>
                 Eficiencia: <b style="color:#0f172a;">${rendimiento.toFixed(2)} km/gal</b><br>
@@ -516,6 +591,7 @@
             historialArray[index + 1] = temp;
         }
         localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+        sincronizarNube();
         renderizarTabla();
     };
 
@@ -536,7 +612,7 @@
         idEditando = id;
         
         const btn = document.getElementById('btnGuardar');
-        btn.innerHTML = '<i class="fas fa-edit"></i> Actualizar Registro';
+        btn.innerHTML = '<i class="fas fa-edit"></i> Actualizar en la Nube';
         btn.classList.replace('btn-success', 'btn-primary');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -574,9 +650,10 @@
     }
 
     window.borrarRegistro = function(id) {
-        if(confirm("¿Confirma la eliminación de este registro histórico?")) {
+        if(confirm("¿Confirma la eliminación de este registro? (Se borrará de la nube)")) {
             historialArray = historialArray.filter(reg => reg.id !== id);
             localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
+            sincronizarNube();
             renderizarTabla();
             actualizarGrafica();
         }
@@ -617,7 +694,7 @@
         });
     }
 
-    // --- COPIAS DE SEGURIDAD (BACKUP / RESTORE) ---
+    // --- COPIAS DE SEGURIDAD LOCALES ---
     document.getElementById('btnBackup').addEventListener('click', () => {
         if(historialArray.length === 0) return alert("No hay datos para respaldar.");
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(historialArray));
@@ -641,9 +718,10 @@
                         localStorage.setItem('kmMotoGuardado', historialArray[0].kf);
                         document.getElementById('ki').value = historialArray[0].kf;
                     }
+                    sincronizarNube();
                     renderizarTabla();
                     actualizarGrafica();
-                    alert("✅ Base de datos restaurada correctamente.");
+                    alert("✅ Base de datos restaurada y sincronizada.");
                 } else {
                     alert("❌ Formato de archivo inválido.");
                 }
@@ -679,7 +757,7 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swCode = `
-                const CACHE_NAME = 'flotilla-cache-v12';
+                const CACHE_NAME = 'flotilla-cache-v13';
                 self.addEventListener('install', event => {
                     event.waitUntil(
                         caches.open(CACHE_NAME).then(cache => {
