@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flotilla-cache-v16';
+const CACHE_NAME = 'flotilla-cache-v17';
 
 self.addEventListener('install', event => {
     self.skipWaiting(); // Obliga a actualizar la app al instante si hay cambios
