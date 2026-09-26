@@ -6,7 +6,7 @@
     <title>Control de Combustible</title>
     <meta name="theme-color" content="#1e293b">
     
-    <!-- Manifest incrustado directamente para la PWA -->
+    <!-- Manifest incrustado -->
     <link rel="manifest" href='data:application/manifest+json,{"name":"Control de Combustible","short_name":"Combustible","start_url":".","display":"standalone","background_color":"#f1f5f9","theme_color":"#1e293b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3063/3063189.png","sizes":"512x512","type":"image/png"}]}'>
     
     <!-- Tipografía e Iconos -->
@@ -17,27 +17,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    <!-- Librerías Externas para OCR y Gráficos -->
+    <!-- Librerías -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* Diseño Corporativo / Ejecutivo */
         :root { 
-            --bg-body: #f1f5f9; 
-            --bg-surface: #ffffff; 
-            --text-dark: #0f172a; 
-            --text-muted: #64748b; 
-            --primary: #1e293b;
-            --primary-hover: #334155;
-            --accent: #2563eb; 
-            --accent-hover: #1d4ed8;
-            --success: #0f766e; 
-            --success-hover: #115e59;
-            --danger: #ef4444;
-            --border: #e2e8f0; 
-            --radius: 8px; 
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --bg-body: #f1f5f9; --bg-surface: #ffffff; --text-dark: #0f172a; --text-muted: #64748b; 
+            --primary: #1e293b; --primary-hover: #334155; --accent: #2563eb; --accent-hover: #1d4ed8;
+            --success: #0f766e; --success-hover: #115e59; --danger: #ef4444; --border: #e2e8f0; 
+            --radius: 8px; --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-dark); margin: 0; padding: 0 0 50px; -webkit-font-smoothing: antialiased; }
@@ -61,7 +50,6 @@
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         input, select { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; color: var(--text-dark); background-color: #f8fafc; box-sizing: border-box; transition: all 0.2s; }
         input:focus, select:focus { border-color: var(--accent); outline: none; background-color: var(--bg-surface); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        select { cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 12px top 50%; background-size: 10px auto; }
         
         .summary-panel { background: var(--bg-body); padding: 16px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
         .summary-panel span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
@@ -80,12 +68,11 @@
         .btn-outline:hover { background-color: #f1f5f9; border-color: #94a3b8; }
 
         .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        
         .alert-box { background: #f0fdfa; border-left: 4px solid var(--success); padding: 16px; border-radius: 4px; margin-top: 20px; font-size: 0.9rem; color: #134e4a; display: none; line-height: 1.5; }
         
-        .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; padding-bottom: 150px; /* Espacio extra para que el menú de 3 puntos no se corte */ }
+        .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; padding-bottom: 60px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 1000px; }
-        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); position: relative; }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
         th { background: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; }
         tbody tr:hover { background-color: #f8fafc; }
         .badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; border: 1px solid #bae6fd; }
@@ -93,13 +80,11 @@
         .badge-regular { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
         .badge-super { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
 
-        /* ====== MENÚ DE 3 PUNTOS (⋮) TIPO APP NATIVA ====== */
+        /* MENÚ DE 3 PUNTOS (TIPO FACEBOOK) */
         .action-menu-container { position: relative; display: inline-block; }
         .btn-dots { background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; padding: 6px 12px; cursor: pointer; border-radius: 4px; transition: background 0.2s; width: auto; display: inline-block; }
         .btn-dots:hover, .btn-dots.active { background: #e2e8f0; color: var(--primary); }
-        
-        /* El Menú Flotante */
-        .dropdown-menu { display: none; position: absolute; right: 25px; top: 0; background: white; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); border-radius: 8px; z-index: 999; min-width: 140px; overflow: hidden; }
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-radius: 8px; z-index: 50; min-width: 140px; overflow: hidden; }
         .dropdown-menu.show { display: block; }
         .dropdown-item { display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%; padding: 12px 16px; border: none; border-bottom: 1px solid #f1f5f9; background: white; color: var(--text-dark); font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s; border-radius: 0; }
         .dropdown-item:last-child { border-bottom: none; }
@@ -113,7 +98,6 @@
         .modal-content h3 { margin-top: 0; color: var(--text-dark); display: flex; align-items: center; gap: 8px; font-size: 1.2rem; }
         .modal-content p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
 
-        /* OPTIMIZACIÓN IMPRESIÓN PDF PERFECTO */
         @media print {
             @page { size: landscape; margin: 10mm; } 
             body { background: white !important; padding: 0 !important; color: black !important; }
@@ -140,7 +124,6 @@
         <i class="fas fa-gas-pump"></i>
         <h1>Control de Flotilla</h1>
     </div>
-    <!-- Indicador de Nube -->
     <div class="cloud-status">
         <span id="textNube">Conectando...</span>
         <i id="iconNube" class="fas fa-cloud"></i>
@@ -149,10 +132,8 @@
 
 <div class="container">
     
-    <!-- Calculadora Inteligente de Proyección -->
     <div class="card">
         <h2><i class="fas fa-calculator"></i> Calculadora y Proyección</h2>
-        
         <div class="grid-2">
             <div class="input-group">
                 <label>Precio del Galón (Q)</label>
@@ -163,7 +144,6 @@
                 <input type="number" id="projTanque" value="2.7" placeholder="Ej. 2.7">
             </div>
         </div>
-        
         <div class="grid-2">
             <div class="input-group">
                 <label>Km Recorrer</label>
@@ -174,12 +154,10 @@
                 <input type="number" id="projMonto" placeholder="Ej. 10.00">
             </div>
         </div>
-        
         <button class="btn-secondary" id="btnCalcular"><i class="fas fa-bolt"></i> Calcular Estimación</button>
         <div id="resultadoProyeccion" class="alert-box" style="border-left-color: var(--accent); background: #eff6ff; color: #1e3a8a;"></div>
     </div>
 
-    <!-- Registro y OCR -->
     <div class="card">
         <div class="header-actions">
             <h2><i class="fas fa-file-invoice-dollar"></i> Registro de Carga Oficial</h2>
@@ -200,7 +178,6 @@
                 <input type="text" id="refFactura" placeholder="Ej. 12345">
             </div>
         </div>
-        
         <div class="grid-2">
             <div class="input-group">
                 <label>Odómetro Inicial</label>
@@ -236,21 +213,17 @@
                 <input type="number" id="costo" step="0.01" placeholder="Ej. 67.03">
             </div>
         </div>
-        
         <button class="btn-success" id="btnGuardar" style="margin-top: 10px;"><i class="fas fa-cloud-upload-alt"></i> Guardar en la Nube</button>
     </div>
 
-    <!-- Gráfica de Rendimiento -->
     <div class="card">
         <h2><i class="fas fa-chart-line"></i> Análisis de Rendimiento Histórico</h2>
         <canvas id="chartRendimiento" height="90"></canvas>
     </div>
 
-    <!-- Historial y Backup -->
     <div class="card">
         <h2><i class="fas fa-table"></i> Base de Datos Histórica</h2>
         
-        <!-- Panel de Resumen del Mes -->
         <div class="grid-2" style="margin-bottom: 20px;">
             <div class="summary-panel">
                 <span>Gasto del Mes</span>
@@ -286,9 +259,7 @@
                         <th style="text-align: center; min-width: 60px;">Acción</th>
                     </tr>
                 </thead>
-                <tbody id="bodyHistorial">
-                    <!-- Registros inyectados por JS -->
-                </tbody>
+                <tbody id="bodyHistorial"></tbody>
             </table>
         </div>
         <div class="grid-2" style="margin-top: 24px;">
@@ -298,7 +269,6 @@
     </div>
 </div>
 
-<!-- Modal Corporativo -->
 <div id="ventanaResumen" class="modal-overlay">
     <div class="modal-content">
         <h3 style="color: var(--success);"><i class="fas fa-check-circle"></i> Transacción Exitosa</h3>
@@ -308,9 +278,18 @@
 </div>
 
 <script>
-    // ==========================================
-    // CONFIGURACIÓN DE FIREBASE (LA NUBE)
-    // ==========================================
+    // --- SCRIPT ANTI-BLOQUEO (MATA VERSIONES VIEJAS DE CACHÉ) ---
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                registration.unregister(); // Elimina el motor viejo atascado
+            }
+        });
+        caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => caches.delete(key))); // Borra basura vieja
+        });
+    }
+
     const firebaseConfig = {
         apiKey: "AIzaSyC4usCsv7vxYrqd_R3GefHecy1ZgPFivjU",
         authDomain: "controlcilco.firebaseapp.com",
@@ -325,13 +304,12 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     
-    // Variables Globales
     let historialArray = JSON.parse(localStorage.getItem('gasolinaHistorial')) || [];
     let chartInstance = null;
     let idEditando = null;
     let nubeSincronizada = false;
 
-    // --- LOGICA DE LOS MENÚS DE 3 PUNTOS ---
+    // --- CERRAR MENÚS DE 3 PUNTOS AL TOCAR AFUERA ---
     window.addEventListener('click', function(e) {
         if (!e.target.matches('.btn-dots') && !e.target.matches('.btn-dots *')) {
             document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
@@ -342,17 +320,13 @@
 
     window.toggleDropdown = function(id, event) {
         event.stopPropagation();
-        // Cierra los demás
         document.querySelectorAll('.dropdown-menu').forEach(menu => {
             if(menu.id !== `dropdown-${id}`) menu.classList.remove('show');
         });
-        // Abre el seleccionado
         document.getElementById(`dropdown-${id}`).classList.toggle('show');
     };
 
-    // --- BORRADOR AUTOMÁTICO (PROTECCIÓN ANTI-CIERRE) ---
     const camposBorrador = ['projPrecio', 'projTanque', 'projKM', 'projMonto', 'fechaCarga', 'refFactura', 'ki', 'kf', 'gal', 'precio', 'tipoComb', 'costo'];
-    
     function guardarBorrador() {
         const borrador = {};
         camposBorrador.forEach(id => {
@@ -361,7 +335,6 @@
         });
         localStorage.setItem('flotillaBorrador', JSON.stringify(borrador));
     }
-
     camposBorrador.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -383,7 +356,6 @@
         });
     }
 
-    // --- MONITOREO DE CONEXIÓN A LA NUBE ---
     database.ref('.info/connected').on('value', function(snap) {
         const iconNube = document.getElementById('iconNube');
         const textNube = document.getElementById('textNube');
@@ -420,7 +392,6 @@
         }
     }
 
-    // --- AUTOCOMPLETADO MATEMÁTICO ---
     const inGal = document.getElementById('gal');
     const inPre = document.getElementById('precio');
     const inCos = document.getElementById('costo');
@@ -479,7 +450,6 @@
         actualizarGrafica();
     });
 
-    // --- OCR ESCÁNER ---
     document.getElementById('btnOCR').addEventListener('click', () => document.getElementById('inputFactura').click());
     
     document.getElementById('inputFactura').addEventListener('change', async (e) => {
@@ -533,7 +503,6 @@
         }
     });
 
-    // --- CALCULADORA DE PROYECCIÓN ---
     document.getElementById('btnCalcular').addEventListener('click', () => {
         const km = parseFloat(document.getElementById('projKM').value);
         const monto = parseFloat(document.getElementById('projMonto').value);
@@ -606,7 +575,6 @@
         }
     });
 
-    // --- GUARDAR O ACTUALIZAR REGISTRO ---
     document.getElementById('btnGuardar').addEventListener('click', () => {
         const fechaCarga = document.getElementById('fechaCarga').value;
         const refFac = document.getElementById('refFactura').value || '-';
@@ -684,7 +652,6 @@
         }
     });
 
-    // --- ACCIONES DE LA TABLA ---
     window.moverRegistro = function(index, direccion) {
         if (direccion === -1 && index > 0) { 
             const temp = historialArray[index];
@@ -721,13 +688,9 @@
         const btn = document.getElementById('btnGuardar');
         btn.innerHTML = '<i class="fas fa-edit"></i> Actualizar en la Nube';
         btn.classList.replace('btn-success', 'btn-primary');
-        
-        // Cerramos el menú desplegable manualmente
-        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ====== NUEVA FUNCIÓN RENDERIZAR CON 3 PUNTOS (⋮) ======
     function renderizarTabla() {
         const tbody = document.getElementById('bodyHistorial');
         tbody.innerHTML = '';
@@ -765,7 +728,7 @@
                 <td><strong>${costoMostrado}</strong></td>
                 <td>${reg.rendimiento}</td>
                 <td><span class="badge">Q${reg.costoKm}</span></td>
-                <td style="text-align: center; white-space: nowrap; overflow: visible;">
+                <td style="text-align: center; white-space: nowrap;">
                     <div class="action-menu-container">
                         <button class="btn-dots" onclick="toggleDropdown(${reg.id}, event)"><i class="fas fa-ellipsis-v"></i></button>
                         <div id="dropdown-${reg.id}" class="dropdown-menu">
@@ -857,7 +820,6 @@
         });
     }
 
-    // --- COPIAS DE SEGURIDAD LOCALES ---
     document.getElementById('btnBackup').addEventListener('click', () => {
         if(historialArray.length === 0) return alert("No hay datos para respaldar.");
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(historialArray));
@@ -895,7 +857,6 @@
         reader.readAsText(file);
     });
 
-    // Exportaciones PDF/CSV
     document.getElementById('btnExportarPDF').addEventListener('click', () => window.print());
 
     document.getElementById('btnExportarCSV').addEventListener('click', () => {
