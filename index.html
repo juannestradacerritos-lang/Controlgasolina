@@ -63,6 +63,11 @@
         input:focus, select:focus { border-color: var(--accent); outline: none; background-color: var(--bg-surface); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         select { cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 12px top 50%; background-size: 10px auto; }
         
+        .summary-panel { background: var(--bg-body); padding: 16px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
+        .summary-panel span { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
+        .summary-panel .amount { font-size: 1.5rem; font-weight: 700; color: var(--danger); }
+        .summary-panel .km { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+
         button { width: 100%; padding: 12px 16px; border: none; border-radius: 6px; color: white; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s; }
         button:active { transform: scale(0.98); }
         .btn-primary { background-color: var(--accent); }
@@ -71,21 +76,16 @@
         .btn-success:hover { background-color: var(--success-hover); }
         .btn-secondary { background-color: var(--primary); }
         .btn-secondary:hover { background-color: var(--primary-hover); }
-        
         .btn-outline { background-color: transparent; border: 1px solid #cbd5e1; color: var(--text-dark); width: auto; padding: 8px 14px; font-size: 0.8rem; }
         .btn-outline:hover { background-color: #f1f5f9; border-color: #94a3b8; }
-        .btn-icon-danger { background-color: transparent; color: var(--danger); font-size: 1rem; padding: 6px; width: auto; border-radius: 4px; }
-        .btn-icon-danger:hover { background-color: #fef2f2; }
-        .btn-icon-action { background-color: transparent; font-size: 1rem; padding: 6px; width: auto; border-radius: 4px; transition: all 0.2s; }
-        .btn-icon-action:hover { background-color: #f1f5f9; }
 
         .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         
         .alert-box { background: #f0fdfa; border-left: 4px solid var(--success); padding: 16px; border-radius: 4px; margin-top: 20px; font-size: 0.9rem; color: #134e4a; display: none; line-height: 1.5; }
         
-        .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 950px; }
-        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; padding-bottom: 150px; /* Espacio extra para que el menú de 3 puntos no se corte */ }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 1000px; }
+        th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); position: relative; }
         th { background: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; }
         tbody tr:hover { background-color: #f8fafc; }
         .badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 0.75rem; border: 1px solid #bae6fd; }
@@ -93,19 +93,35 @@
         .badge-regular { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
         .badge-super { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
 
+        /* ====== MENÚ DE 3 PUNTOS (⋮) TIPO APP NATIVA ====== */
+        .action-menu-container { position: relative; display: inline-block; }
+        .btn-dots { background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; padding: 6px 12px; cursor: pointer; border-radius: 4px; transition: background 0.2s; width: auto; display: inline-block; }
+        .btn-dots:hover, .btn-dots.active { background: #e2e8f0; color: var(--primary); }
+        
+        /* El Menú Flotante */
+        .dropdown-menu { display: none; position: absolute; right: 25px; top: 0; background: white; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); border-radius: 8px; z-index: 999; min-width: 140px; overflow: hidden; }
+        .dropdown-menu.show { display: block; }
+        .dropdown-item { display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%; padding: 12px 16px; border: none; border-bottom: 1px solid #f1f5f9; background: white; color: var(--text-dark); font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: background 0.2s; border-radius: 0; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: #f8fafc; }
+        .dropdown-item i { width: 16px; text-align: center; }
+        .text-danger { color: var(--danger) !important; }
+        .dropdown-item.text-danger:hover { background: #fef2f2; }
+
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
         .modal-content { background: white; padding: 32px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
         .modal-content h3 { margin-top: 0; color: var(--text-dark); display: flex; align-items: center; gap: 8px; font-size: 1.2rem; }
         .modal-content p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
 
+        /* OPTIMIZACIÓN IMPRESIÓN PDF PERFECTO */
         @media print {
             @page { size: landscape; margin: 10mm; } 
             body { background: white !important; padding: 0 !important; color: black !important; }
             .card { box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0 !important; }
             .card:nth-child(1), .card:nth-child(2), .card:nth-child(3), .app-header { display: none !important; }
-            .card h2, .grid-2, button, .btn-icon-action, .btn-icon-danger { display: none !important; }
+            .card h2, .grid-2, button, .action-menu-container { display: none !important; }
             
-            .table-wrapper { overflow: visible !important; border: none !important; }
+            .table-wrapper { overflow: visible !important; border: none !important; padding-bottom: 0 !important; }
             .table-wrapper::before { content: "Reporte de Rendimiento - Control de Flotilla"; font-size: 14pt; font-weight: bold; display: block; margin-bottom: 10px; color: black; text-transform: uppercase; border-bottom: 2px solid black; padding-bottom: 5px; }
             
             table { border: 1px solid black !important; min-width: 100% !important; font-size: 8pt !important; width: 100% !important; table-layout: auto; }
@@ -174,10 +190,17 @@
             </div>
         </div>
         
-        <div class="input-group">
-            <label>Referencia / Documento / Fecha</label>
-            <input type="text" id="f" placeholder="Ej. Factura #12345">
+        <div class="grid-2">
+            <div class="input-group">
+                <label>Fecha de Carga</label>
+                <input type="date" id="fechaCarga">
+            </div>
+            <div class="input-group">
+                <label>Ref / Factura (Opcional)</label>
+                <input type="text" id="refFactura" placeholder="Ej. 12345">
+            </div>
         </div>
+        
         <div class="grid-2">
             <div class="input-group">
                 <label>Odómetro Inicial</label>
@@ -227,6 +250,18 @@
     <div class="card">
         <h2><i class="fas fa-table"></i> Base de Datos Histórica</h2>
         
+        <!-- Panel de Resumen del Mes -->
+        <div class="grid-2" style="margin-bottom: 20px;">
+            <div class="summary-panel">
+                <span>Gasto del Mes</span>
+                <div class="amount" id="mesGasto">Q0.00</div>
+            </div>
+            <div class="summary-panel">
+                <span>Recorrido del Mes</span>
+                <div class="km" id="mesKm">0.0 km</div>
+            </div>
+        </div>
+        
         <div class="grid-2" style="margin-bottom: 16px;">
             <button class="btn-outline" id="btnBackup"><i class="fas fa-download"></i> Guardar Copia Local</button>
             <button class="btn-outline" onclick="document.getElementById('inputRestore').click()"><i class="fas fa-upload"></i> Restaurar Copia Local</button>
@@ -237,7 +272,8 @@
             <table id="tablaHistorial">
                 <thead>
                     <tr>
-                        <th>Ref.</th>
+                        <th>Fecha</th>
+                        <th>Días</th>
                         <th>Tipo</th>
                         <th>Odo. Inic.</th>
                         <th>Odo. Fin.</th>
@@ -247,7 +283,7 @@
                         <th>Total(Q)</th>
                         <th>Eficiencia</th>
                         <th>Costo/KM</th>
-                        <th style="text-align: center; min-width: 140px;">Acción</th>
+                        <th style="text-align: center; min-width: 60px;">Acción</th>
                     </tr>
                 </thead>
                 <tbody id="bodyHistorial">
@@ -293,9 +329,29 @@
     let historialArray = JSON.parse(localStorage.getItem('gasolinaHistorial')) || [];
     let chartInstance = null;
     let idEditando = null;
+    let nubeSincronizada = false;
+
+    // --- LOGICA DE LOS MENÚS DE 3 PUNTOS ---
+    window.addEventListener('click', function(e) {
+        if (!e.target.matches('.btn-dots') && !e.target.matches('.btn-dots *')) {
+            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+    });
+
+    window.toggleDropdown = function(id, event) {
+        event.stopPropagation();
+        // Cierra los demás
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            if(menu.id !== `dropdown-${id}`) menu.classList.remove('show');
+        });
+        // Abre el seleccionado
+        document.getElementById(`dropdown-${id}`).classList.toggle('show');
+    };
 
     // --- BORRADOR AUTOMÁTICO (PROTECCIÓN ANTI-CIERRE) ---
-    const camposBorrador = ['projPrecio', 'projTanque', 'projKM', 'projMonto', 'f', 'ki', 'kf', 'gal', 'precio', 'tipoComb', 'costo'];
+    const camposBorrador = ['projPrecio', 'projTanque', 'projKM', 'projMonto', 'fechaCarga', 'refFactura', 'ki', 'kf', 'gal', 'precio', 'tipoComb', 'costo'];
     
     function guardarBorrador() {
         const borrador = {};
@@ -314,6 +370,19 @@
         }
     });
 
+    function corregirFechasAntiguas() {
+        historialArray.forEach(reg => {
+            if (!reg.fecha) {
+                if (reg.fac && reg.fac.includes('/')) {
+                    const parts = reg.fac.replace('Reg: ', '').split('/');
+                    if(parts.length === 3) reg.fecha = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                } else {
+                    reg.fecha = new Date().toISOString().split('T')[0];
+                }
+            }
+        });
+    }
+
     // --- MONITOREO DE CONEXIÓN A LA NUBE ---
     database.ref('.info/connected').on('value', function(snap) {
         const iconNube = document.getElementById('iconNube');
@@ -321,9 +390,11 @@
         if (snap.val() === true) {
             iconNube.style.color = '#10b981';
             textNube.innerText = 'Online';
+            nubeSincronizada = true;
         } else {
             iconNube.style.color = '#ef4444'; 
             textNube.innerText = 'Offline';
+            nubeSincronizada = false;
         }
     });
 
@@ -331,6 +402,7 @@
         const data = snapshot.val();
         if (data) {
             historialArray = data;
+            corregirFechasAntiguas();
             localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
             if (historialArray.length > 0) {
                 localStorage.setItem('kmMotoGuardado', historialArray[0].kf);
@@ -341,10 +413,11 @@
     });
 
     function sincronizarNube() {
-        // Enviar a la nube. Si no hay internet, Firebase lo pone en cola y lo envía apenas se conecte.
-        database.ref('FlotillaApp/Historial').set(historialArray);
-        const km = localStorage.getItem('kmMotoGuardado');
-        if(km) database.ref('FlotillaApp/Config/UltimoKM').set(km);
+        if (nubeSincronizada) {
+            database.ref('FlotillaApp/Historial').set(historialArray);
+            const km = localStorage.getItem('kmMotoGuardado');
+            if(km) database.ref('FlotillaApp/Config/UltimoKM').set(km);
+        }
     }
 
     // --- AUTOCOMPLETADO MATEMÁTICO ---
@@ -390,7 +463,6 @@
             document.getElementById('projTanque').value = tk;
         });
 
-        // Restaurar el borrador automático si existe
         const borrador = JSON.parse(localStorage.getItem('flotillaBorrador'));
         if (borrador) {
             camposBorrador.forEach(id => {
@@ -399,10 +471,10 @@
                 }
             });
         } else {
-            const fechaHoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
-            document.getElementById('f').value = `Reg: ${fechaHoy}`;
+            document.getElementById('fechaCarga').value = new Date().toISOString().split('T')[0];
         }
         
+        corregirFechasAntiguas();
         renderizarTabla();
         actualizarGrafica();
     });
@@ -536,13 +608,16 @@
 
     // --- GUARDAR O ACTUALIZAR REGISTRO ---
     document.getElementById('btnGuardar').addEventListener('click', () => {
-        const fac = document.getElementById('f').value || '-';
+        const fechaCarga = document.getElementById('fechaCarga').value;
+        const refFac = document.getElementById('refFactura').value || '-';
         const tipoComb = document.getElementById('tipoComb').value;
         const ki = parseFloat(document.getElementById('ki').value);
         const kf = parseFloat(document.getElementById('kf').value);
         const gal = parseFloat(document.getElementById('gal').value);
         let costoVal = parseFloat(document.getElementById('costo').value);
         let precioVal = parseFloat(document.getElementById('precio').value);
+
+        if (!fechaCarga) return alert("Por favor seleccione la Fecha de Carga.");
 
         if (ki && kf && gal && (costoVal || precioVal) && kf > ki) {
             
@@ -554,7 +629,7 @@
             const costoKm = costoVal / recorrido;
 
             const datosProcesados = {
-                fac, tipoComb, ki, kf, recorrido, 
+                fecha: fechaCarga, fac: refFac, tipoComb, ki, kf, recorrido, 
                 gal: gal.toFixed(3), 
                 precio: precioVal.toFixed(2),
                 costo: costoVal.toFixed(2),
@@ -577,13 +652,12 @@
             } else {
                 datosProcesados.id = Date.now();
                 historialArray.unshift(datosProcesados);
+                historialArray.sort((a,b) => new Date(b.fecha) - new Date(a.fecha)); 
                 localStorage.setItem('kmMotoGuardado', kf);
             }
 
             localStorage.setItem('gasolinaHistorial', JSON.stringify(historialArray));
             sincronizarNube();
-
-            // ¡IMPORTANTE! Limpiar el borrador porque ya se guardó la factura oficialmente
             localStorage.removeItem('flotillaBorrador');
 
             const kmMemoria = localStorage.getItem('kmMotoGuardado');
@@ -592,6 +666,7 @@
             document.getElementById('gal').value = '';
             document.getElementById('precio').value = '';
             document.getElementById('costo').value = '';
+            document.getElementById('refFactura').value = '';
             
             renderizarTabla();
             actualizarGrafica();
@@ -629,7 +704,8 @@
         const reg = historialArray.find(r => r.id === id);
         if(!reg) return;
         
-        document.getElementById('f').value = reg.fac;
+        document.getElementById('fechaCarga').value = reg.fecha;
+        document.getElementById('refFactura').value = reg.fac === '-' ? '' : reg.fac;
         document.getElementById('tipoComb').value = reg.tipoComb || 'Regular';
         document.getElementById('ki').value = reg.ki;
         document.getElementById('kf').value = reg.kf;
@@ -645,9 +721,13 @@
         const btn = document.getElementById('btnGuardar');
         btn.innerHTML = '<i class="fas fa-edit"></i> Actualizar en la Nube';
         btn.classList.replace('btn-success', 'btn-primary');
+        
+        // Cerramos el menú desplegable manualmente
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    // ====== NUEVA FUNCIÓN RENDERIZAR CON 3 PUNTOS (⋮) ======
     function renderizarTabla() {
         const tbody = document.getElementById('bodyHistorial');
         tbody.innerHTML = '';
@@ -657,9 +737,25 @@
             const claseBadgeTipo = reg.tipoComb === 'Súper' ? 'badge-super' : 'badge-regular';
             const tipoCombTexto = reg.tipoComb || 'Regular';
 
+            let fechaVista = reg.fecha;
+            if(reg.fecha && reg.fecha.includes('-')) {
+                const [y, m, d] = reg.fecha.split('-');
+                fechaVista = `${d}/${m}/${y}`;
+            }
+
+            let diasStr = "-";
+            if (index < historialArray.length - 1 && reg.fecha && historialArray[index + 1].fecha) {
+                const dCurrent = new Date(reg.fecha + "T12:00:00");
+                const dPrev = new Date(historialArray[index + 1].fecha + "T12:00:00");
+                const diffTime = dCurrent - dPrev;
+                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                diasStr = diffDays >= 0 ? `${diffDays} d` : "-";
+            }
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${reg.fac}</strong></td>
+                <td><strong>${fechaVista}</strong><br><span style="font-size:0.65rem; color:#64748b;">${reg.fac}</span></td>
+                <td><strong>${diasStr}</strong></td>
                 <td><span class="${claseBadgeTipo}">${tipoCombTexto}</span></td>
                 <td>${reg.ki}</td>
                 <td>${reg.kf}</td>
@@ -669,15 +765,44 @@
                 <td><strong>${costoMostrado}</strong></td>
                 <td>${reg.rendimiento}</td>
                 <td><span class="badge">Q${reg.costoKm}</span></td>
-                <td style="text-align: center; white-space: nowrap;">
-                    <button class="btn-icon-action" style="color: #2563eb;" onclick="editarRegistro(${reg.id})" title="Editar"><i class="fas fa-pen"></i></button>
-                    <button class="btn-icon-action" style="color: #64748b;" onclick="moverRegistro(${index}, -1)" title="Mover Arriba"><i class="fas fa-arrow-up"></i></button>
-                    <button class="btn-icon-action" style="color: #64748b;" onclick="moverRegistro(${index}, 1)" title="Mover Abajo"><i class="fas fa-arrow-down"></i></button>
-                    <button class="btn-icon-action" style="color: #ef4444;" onclick="borrarRegistro(${reg.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                <td style="text-align: center; white-space: nowrap; overflow: visible;">
+                    <div class="action-menu-container">
+                        <button class="btn-dots" onclick="toggleDropdown(${reg.id}, event)"><i class="fas fa-ellipsis-v"></i></button>
+                        <div id="dropdown-${reg.id}" class="dropdown-menu">
+                            <button class="dropdown-item" onclick="editarRegistro(${reg.id})"><i class="fas fa-pen" style="color:#2563eb;"></i> Editar</button>
+                            <button class="dropdown-item" onclick="moverRegistro(${index}, -1)"><i class="fas fa-arrow-up" style="color:#64748b;"></i> Subir</button>
+                            <button class="dropdown-item" onclick="moverRegistro(${index}, 1)"><i class="fas fa-arrow-down" style="color:#64748b;"></i> Bajar</button>
+                            <button class="dropdown-item text-danger" onclick="borrarRegistro(${reg.id})"><i class="fas fa-trash"></i> Eliminar</button>
+                        </div>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
         });
+
+        actualizarResumenMes();
+    }
+
+    function actualizarResumenMes() {
+        const today = new Date();
+        const curMonth = today.getMonth();
+        const curYear = today.getFullYear();
+        let gastoMes = 0;
+        let kmMes = 0;
+
+        historialArray.forEach(reg => {
+            if(reg.fecha && reg.fecha.includes('-')) {
+                const [y, m, d] = reg.fecha.split('-');
+                if (parseInt(y) === curYear && parseInt(m) - 1 === curMonth) {
+                    const costoF = reg.costo ? parseFloat(reg.costo) : (parseFloat(reg.gal) * parseFloat(reg.precio||0));
+                    gastoMes += costoF;
+                    kmMes += parseFloat(reg.recorrido || 0);
+                }
+            }
+        });
+
+        document.getElementById('mesGasto').innerText = 'Q' + gastoMes.toFixed(2);
+        document.getElementById('mesKm').innerText = kmMes.toFixed(1) + ' km';
     }
 
     window.borrarRegistro = function(id) {
@@ -693,7 +818,14 @@
     function actualizarGrafica() {
         const ctx = document.getElementById('chartRendimiento').getContext('2d');
         const datosGrafica = [...historialArray].slice(0, 10).reverse();
-        const labels = datosGrafica.map(r => r.fac.substring(0, 10));
+        
+        const labels = datosGrafica.map(r => {
+            if(r.fecha && r.fecha.includes('-')) {
+                const [y, m, d] = r.fecha.split('-');
+                return `${d}/${m}`;
+            }
+            return r.fac.substring(0, 5);
+        });
         const data = datosGrafica.map(r => parseFloat(r.rendimiento));
 
         if(chartInstance) chartInstance.destroy();
@@ -768,12 +900,19 @@
 
     document.getElementById('btnExportarCSV').addEventListener('click', () => {
         if (historialArray.length === 0) return alert("Base de datos vacía.");
-        let csvContent = "data:text/csv;charset=utf-8,Referencia,Tipo Combustible,Odometro Inicial,Odometro Final,Distancia(km),Galones,Precio/Galon(Q),Monto Total(Q),Eficiencia(km/gal),Costo por KM(Q)\n";
-        historialArray.forEach(r => {
+        let csvContent = "data:text/csv;charset=utf-8,Fecha,Referencia,Dias Transcurridos,Tipo Combustible,Odometro Inicial,Odometro Final,Distancia(km),Galones,Precio/Galon(Q),Monto Total(Q),Eficiencia(km/gal),Costo por KM(Q)\n";
+        historialArray.forEach((r, index) => {
             const precioCSV = r.precio || '0.00';
             const costoCSV = r.costo || (parseFloat(r.gal) * parseFloat(r.precio||0)).toFixed(2);
             const tipoCSV = r.tipoComb || 'Regular';
-            csvContent += `"${r.fac}","${tipoCSV}",${r.ki},${r.kf},${r.recorrido},${r.gal},${precioCSV},${costoCSV},${r.rendimiento},${r.costoKm}\n`;
+            let diasCSV = "-";
+            if (index < historialArray.length - 1 && r.fecha && historialArray[index + 1].fecha) {
+                const dCurrent = new Date(r.fecha + "T12:00:00");
+                const dPrev = new Date(historialArray[index + 1].fecha + "T12:00:00");
+                const diffDays = Math.round((dCurrent - dPrev) / (1000 * 60 * 60 * 24));
+                diasCSV = diffDays >= 0 ? diffDays : "-";
+            }
+            csvContent += `"${r.fecha}","${r.fac}",${diasCSV},"${tipoCSV}",${r.ki},${r.kf},${r.recorrido},${r.gal},${precioCSV},${costoCSV},${r.rendimiento},${r.costoKm}\n`;
         });
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
@@ -784,16 +923,6 @@
         document.body.removeChild(link);
     });
 
-    // --- PWA: REGISTRO DE SERVICE WORKER FÍSICO ---
-    // NOTA: Para que funcione sin internet, debes crear un archivo "sw.js" en GitHub 
-    // con el código del Service Worker, ya que los virtuales se borran al cerrar la pestaña.
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(() => console.log('Modo Offline Permanente Activo'))
-                .catch(err => console.error('Error PWA', err));
-        });
-    }
 </script>
 </body>
 </html>
